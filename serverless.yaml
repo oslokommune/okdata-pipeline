@@ -36,6 +36,9 @@ functions:
   validate_json:
     handler: okdata.pipeline.validators.json.handler.handle
     timeout: 60
+  write_kinesis:
+    handler: okdata.pipeline.writers.kinesis.handler.handle
+    timeout: 70
   xls_to_csv:
     handler: okdata.pipeline.converters.xls.main.handler
     timeout: 120

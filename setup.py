@@ -25,6 +25,7 @@ setuptools.setup(
         "okdata-aws",
         "pandas<0.24",
         "python-dateutil",
+        "requests",
         "xlrd",
     ],
 )
