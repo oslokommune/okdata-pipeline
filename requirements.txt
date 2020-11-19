@@ -13,14 +13,18 @@ importlib-metadata==3.1.0  # via jsonpickle
 jmespath==0.10.0          # via boto3, botocore
 jsonpickle==1.4.1         # via aws-xray-sdk
 jsonschema==3.2.0         # via okdata-pipeline (setup.py)
+numpy==1.19.4             # via pandas
 okdata-aws==0.1.0         # via okdata-pipeline (setup.py)
+pandas==0.23.4            # via okdata-pipeline (setup.py)
 pyrsistent==0.17.3        # via jsonschema
-python-dateutil==2.8.1    # via botocore, okdata-pipeline (setup.py)
+python-dateutil==2.8.1    # via botocore, okdata-pipeline (setup.py), pandas
+pytz==2020.4              # via pandas
 s3transfer==0.3.3         # via boto3
 six==1.15.0               # via jsonschema, python-dateutil, structlog
 structlog==20.1.0         # via okdata-aws
 urllib3==1.26.2           # via botocore
 wrapt==1.12.1             # via aws-xray-sdk
+xlrd==1.2.0               # via okdata-pipeline (setup.py)
 zipp==3.4.0               # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
