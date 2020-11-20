@@ -1,8 +1,10 @@
 from copy import deepcopy
+from dataclasses import FrozenInstanceError
 
 import pytest
 
-from okdata.pipeline.models import Config, OutputDataset, Pipeline, StepData
+from okdata.pipeline.models import Config, OutputDataset, Payload, Pipeline, StepData
+
 
 event_pipeline_lambda_event = {
     "execution_name": "test_execution",
@@ -135,6 +137,25 @@ event_with_null_task_config_child = {
     },
     "task_config": {"some_config": "some value"},
 }
+
+
+def test_config_types():
+    config = Config.from_lambda_event(event_pipeline_lambda_event)
+    assert isinstance(config.payload, Payload)
+    assert isinstance(config.payload.pipeline, Pipeline)
+    assert isinstance(config.payload.step_data, StepData)
+    assert isinstance(config.payload.output_dataset, OutputDataset)
+
+
+def test_config_immutable():
+    config = Config.from_lambda_event(event_pipeline_lambda_event)
+    with pytest.raises(FrozenInstanceError):
+        config.execution_name = "bleh"
+    with pytest.raises(FrozenInstanceError):
+        config.payload.output_dataset.version = "bleh"
+    with pytest.raises(FrozenInstanceError):
+        config.payload.step_data = StepData("", [], {"foo": "bar"})
+    config.payload.step_data.s3_input_prefixes = {"Mutable": "ok"}
 
 
 def test_config_from_event_pipeline_lambda_event():
