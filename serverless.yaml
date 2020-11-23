@@ -33,6 +33,8 @@ package:
 functions:
   invoke:
     handler: okdata.pipeline.lambda_invoker.invoke
+  validate_json:
+    handler: okdata.pipeline.validators.json.handler.handle
     timeout: 60
 
 plugins:

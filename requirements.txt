@@ -4,18 +4,24 @@
 #
 #    pip-compile
 #
+attrs==20.3.0             # via jsonschema
 aws-xray-sdk==2.6.0       # via okdata-pipeline (setup.py)
-boto3==1.16.24            # via okdata-pipeline (setup.py)
-botocore==1.19.24         # via aws-xray-sdk, boto3, s3transfer
+boto3==1.16.25            # via okdata-pipeline (setup.py)
+botocore==1.19.25         # via aws-xray-sdk, boto3, s3transfer
 future==0.18.2            # via aws-xray-sdk
 importlib-metadata==3.1.0  # via jsonpickle
 jmespath==0.10.0          # via boto3, botocore
 jsonpickle==1.4.1         # via aws-xray-sdk
+jsonschema==3.2.0         # via okdata-pipeline (setup.py)
 okdata-aws==0.1.0         # via okdata-pipeline (setup.py)
-python-dateutil==2.8.1    # via botocore
+pyrsistent==0.17.3        # via jsonschema
+python-dateutil==2.8.1    # via botocore, okdata-pipeline (setup.py)
 s3transfer==0.3.3         # via boto3
-six==1.15.0               # via python-dateutil, structlog
+six==1.15.0               # via jsonschema, python-dateutil, structlog
 structlog==20.1.0         # via okdata-aws
 urllib3==1.26.2           # via botocore
 wrapt==1.12.1             # via aws-xray-sdk
 zipp==3.4.0               # via importlib-metadata
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools
