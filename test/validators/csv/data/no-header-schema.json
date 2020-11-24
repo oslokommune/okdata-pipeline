@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "0": {
+                "type": "integer"
+            },
+            "1": {
+                "type": "string"
+            },
+            "2": {
+                "type": "boolean"
+            }
+        }
+    }
+}
+

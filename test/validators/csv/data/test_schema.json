@@ -1,0 +1,57 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/root.json",
+  "type": "array",
+  "title": "The Root Schema",
+  "items": {
+    "$id": "#/items",
+    "type": "object",
+    "title": "The Items Schema",
+    "required": [
+      "int",
+      "bool",
+      "str",
+      "nil"
+    ],
+    "properties": {
+      "int": {
+        "$id": "#/items/properties/int",
+        "type": "integer",
+        "title": "The Int Schema",
+        "default": 0,
+        "examples": [
+          1
+        ]
+      },
+      "bool": {
+        "$id": "#/items/properties/bool",
+        "type": "boolean",
+        "title": "The Bool Schema",
+        "default": false,
+        "examples": [
+          false
+        ]
+      },
+      "str": {
+        "$id": "#/items/properties/str",
+        "type": "string",
+        "title": "The Str Schema",
+        "default": "",
+        "examples": [
+          "string"
+        ],
+        "pattern": "^(.*)$"
+      },
+      "nil": {
+        "$id": "#/items/properties/nil",
+        "type": "null",
+        "title": "The Nil Schema",
+        "default": null,
+        "examples": [
+          null
+        ]
+      }
+    }
+  }
+}
