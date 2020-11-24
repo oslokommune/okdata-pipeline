@@ -1,0 +1,9 @@
+aar	delbydel_id	delbydel_navn	bydel_id	bydel_navn	barn_i_husholdningen	aleneboende	enfamiliehusholdninger_med_voksne_barn	flerfamiliehusholdninger_med_smaa_barn	flerfamiliehusholdninger_med_store_barn	flerfamiliehusholdninger_uten_barn_0_til_17_aar	mor_eller_far_med_smaa_barn	mor_eller_far_med_store_barn	par_med_smaa_barn	par_med_store_barn	par_uten_hjemmeboende_barn
+2008	1202	Ellingsrud	12	Bydel Alna	1 barn i HH	0	198	2	0	36	24	107	140	98	0
+2008	1202	Ellingsrud	12	Bydel Alna	2 barn i HH	0	47	6	6	11	18	49	142	172	0
+2008	1202	Ellingsrud	12	Bydel Alna	3 barn i HH	0	9	8	7	0	15	11	58	51	0
+2008	1202	Ellingsrud	12	Bydel Alna	4 barn eller mer	0	0	4	0	0	5	3	18	16	0
+2008	1202	Ellingsrud	12	Bydel Alna	Ingen barn i HH	1293	0	0	0	30	0	0	0	0	626
+2008	1201	Furuset	12	Bydel Alna	1 barn i HH	0	188	22	6	35	41	78	172	76	0
+2008	1201	Furuset	12	Bydel Alna	2 barn i HH	0	60	20	17	16	28	62	171	139	0
+2008	1201	Furuset	12	Bydel Alna	3 barn i HH	0	12	16	5	7	13	10	105	81	0

@@ -5,7 +5,7 @@ service: okdata-pipeline
 provider:
   name: aws
   runtime: python3.7
-  memorySize: 1024
+  memorySize: 3008
   region: ${opt:region, 'eu-west-1'}
   stage: ${opt:stage, 'dev'}
   deploymentBucket:
@@ -36,6 +36,9 @@ package:
     - okdata/**/*.py
 
 functions:
+  export_csv:
+    handler: okdata.pipeline.converters.csv.handler.export
+    timeout: 900
   invoke:
     handler: okdata.pipeline.lambda_invoker.invoke
     iamRoleStatements: []
