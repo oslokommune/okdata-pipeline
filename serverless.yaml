@@ -14,6 +14,7 @@ provider:
   deploymentPrefix: deploy
   rolePermissionsBoundary: "arn:aws:iam::#{AWS::AccountId}:policy/oslokommune/oslokommune-boundary"
   iamManagedPolicies:
+    - 'arn:aws:iam::#{AWS::AccountId}:policy/pipeline_component_policy'
     - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
   tags:
     GIT_REV: ${git:branch}:${git:sha1}
@@ -26,6 +27,13 @@ provider:
 package:
   exclude:
     - '**/*'
+  include:
+    - okdata/pipeline/**/*.py
+
+functions:
+  invoke:
+    handler: okdata.pipeline.lambda_invoker.invoke
+    timeout: 60
 
 plugins:
   - serverless-python-requirements
