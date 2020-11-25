@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "required": [
+            "delbydel_id",
+            "navn"
+        ],
+        "properties": {
+            "delbydel_id": {
+                "type": "string",
+                "pattern": "^\\d{4}$"
+            },
+            "navn": {
+                "type": "string"
+            },
+            "pris": {
+                "type": "number",
+                "minimum": 100
+            },
+            "til_salg": {
+                "type": "boolean"
+            }
+        }
+    }
+}

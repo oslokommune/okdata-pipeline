@@ -16,6 +16,7 @@ provider:
   iamManagedPolicies:
     - 'arn:aws:iam::#{AWS::AccountId}:policy/pipeline_component_policy'
     - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
+    - "arn:aws:iam::#{AWS::AccountId}:policy/pipeline_component_policy"
   tags:
     GIT_REV: ${git:branch}:${git:sha1}
     VERSION: ${self:custom.version}
@@ -33,6 +34,9 @@ package:
 functions:
   invoke:
     handler: okdata.pipeline.lambda_invoker.invoke
+  validate_csv:
+    handler: okdata.pipeline.validators.csv.validator.validate
+    timeout: 60
   validate_json:
     handler: okdata.pipeline.validators.json.handler.handle
     timeout: 60

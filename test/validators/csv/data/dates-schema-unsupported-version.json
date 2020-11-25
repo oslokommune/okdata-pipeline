@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "required": [
+            "id",
+            "year_column",
+            "date_column",
+            "date_time_column"
+        ],
+        "properties": {
+            "id": {
+                "type": "string"
+            },
+            "year_column": {
+                "type": "string",
+                "format": "year"
+            },
+            "date_column": {
+                "type": "string",
+                "format": "date"
+            },
+            "date_time_column": {
+                "type": "string",
+                "format": "date-time"
+            }
+        }
+    }
+}
