@@ -36,6 +36,11 @@ functions:
   validate_json:
     handler: okdata.pipeline.validators.json.handler.handle
     timeout: 60
+  xls_to_csv:
+    handler: okdata.pipeline.converters.xls.main.handler
+    timeout: 120
+    environment:
+      BUCKET_NAME: ok-origo-dataplatform-${self:provider.stage}
 
 plugins:
   - serverless-python-requirements

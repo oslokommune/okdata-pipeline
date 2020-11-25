@@ -23,6 +23,8 @@ setuptools.setup(
         "boto3",
         "jsonschema",
         "okdata-aws",
+        "pandas<0.24",
         "python-dateutil",
+        "xlrd",
     ],
 )
