@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "id",
+    "year",
+    "date",
+    "datetime"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "year": {
+      "type": "string",
+      "format": "year"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "datetime": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
