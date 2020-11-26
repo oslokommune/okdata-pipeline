@@ -4,8 +4,9 @@ import pytest
 from aws_xray_sdk.core import xray_recorder
 from freezegun.api import freeze_time, FakeDatetime
 from moto import mock_kinesis
+from requests.exceptions import HTTPError
 
-from okdata.pipeline.writers.kinesis.dataset_client import DatasetClient
+from okdata.sdk.data.dataset import Dataset
 from test.writers.kinesis.util import create_stream, get_records_from_stream
 
 xray_recorder.begin_segment("Test")
@@ -27,6 +28,17 @@ lambda_event = lambda_event = {
         "step_data": {"input_events": input_events, "status": "PENDING", "errors": []},
     },
 }
+
+
+def test_get_dataset_retries(
+    kinesis_writer, requests_mock, mocker, mock_dataset_client
+):
+    mocker.spy(kinesis_writer, "get_dataset")
+
+    with pytest.raises(HTTPError):
+        kinesis_writer.get_dataset("error", retries=2)
+
+    assert kinesis_writer.get_dataset.call_count == 3
 
 
 @freeze_time(utc_now)
@@ -76,7 +88,8 @@ def kinesis_writer():
 @pytest.fixture
 def mock_dataset_client(monkeypatch):
     def get_dataset(self, dataset_id):
-        if dataset_id == dataset_id:
-            return {"confidentiality": confidentiality}
+        if dataset_id == "error":
+            raise HTTPError
+        return {"confidentiality": confidentiality}
 
-    monkeypatch.setattr(DatasetClient, "get_dataset", get_dataset)
+    monkeypatch.setattr(Dataset, "get_dataset", get_dataset)
