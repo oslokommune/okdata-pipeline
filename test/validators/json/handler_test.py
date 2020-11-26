@@ -1,15 +1,17 @@
 import json
+import os
 from copy import deepcopy
 from dataclasses import asdict
+from pathlib import Path
 from unittest.mock import ANY
 
 import pytest
 
 from okdata.pipeline.models import StepData
 from okdata.pipeline.validators.json.handler import handle
-from okdata.pipeline.validators.json.jsonschema_validator import JsonSchemaValidator
-from test.validators.json.conftest import test_data_directory
+from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
+test_data_directory = Path(os.path.dirname(__file__), "data")
 input_events = [{"foo", "bar"}]
 schema = json.loads((test_data_directory / "schema.json").read_text())
 validation_errors = [{"index": 0, "message": "some message"}]
@@ -31,8 +33,8 @@ lambda_event = {
 
 def test_validation_success(validation_success):
     result = handle(lambda_event, {})
-    JsonSchemaValidator.validate.assert_called_once_with(
-        self=ANY, json_data=input_events
+    JsonSchemaValidator.validate_list.assert_called_once_with(
+        self=ANY, data=input_events
     )
     assert result == asdict(
         StepData(
@@ -45,8 +47,8 @@ def test_validation_success(validation_success):
 
 def test_validation_failed(validation_failure):
     result = handle(lambda_event, {})
-    JsonSchemaValidator.validate.assert_called_once_with(
-        self=ANY, json_data=input_events
+    JsonSchemaValidator.validate_list.assert_called_once_with(
+        self=ANY, data=input_events
     )
     assert result == asdict(
         StepData(
@@ -94,17 +96,17 @@ def test_no_task_config_succeeds():
 
 @pytest.fixture
 def validation_success(monkeypatch, mocker):
-    def validate(self, json_data):
+    def validate_list(self, data):
         return []
 
-    monkeypatch.setattr(JsonSchemaValidator, "validate", validate)
-    mocker.spy(JsonSchemaValidator, "validate")
+    monkeypatch.setattr(JsonSchemaValidator, "validate_list", validate_list)
+    mocker.spy(JsonSchemaValidator, "validate_list")
 
 
 @pytest.fixture
 def validation_failure(monkeypatch, mocker):
-    def validate(self, json_data):
+    def validate_list(self, data):
         return validation_errors
 
-    monkeypatch.setattr(JsonSchemaValidator, "validate", validate)
-    mocker.spy(JsonSchemaValidator, "validate")
+    monkeypatch.setattr(JsonSchemaValidator, "validate_list", validate_list)
+    mocker.spy(JsonSchemaValidator, "validate_list")

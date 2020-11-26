@@ -1,4 +1,3 @@
-import json
 import os
 from pathlib import Path
 
@@ -20,21 +19,6 @@ def boligpriser_schema(data_dir):
 @fixture
 def no_header_schema(data_dir):
     return (data_dir / "no-header-schema.json").read_text()
-
-
-@fixture
-def dates_header(data_dir):
-    return json.loads((data_dir / "dates-header.txt").read_text())
-
-
-@fixture
-def dates_schema(data_dir):
-    return json.loads((data_dir / "dates-schema.json").read_text())
-
-
-@fixture
-def dates_schema_unsupported_version(data_dir):
-    return json.loads((data_dir / "dates-schema-unsupported-version.json").read_text())
 
 
 @fixture
