@@ -18,11 +18,12 @@ jmespath==0.10.0          # via boto3, botocore
 jsonpickle==1.4.1         # via aws-xray-sdk
 jsonschema==3.2.0         # via okdata-pipeline (setup.py), okdata-sdk
 numpy==1.19.4             # via pandas
-okdata-aws==0.1.0         # via okdata-pipeline (setup.py)
-okdata-sdk==0.5.0         # via okdata-pipeline (setup.py)
+okdata-aws==0.2.0         # via okdata-pipeline (setup.py)
+okdata-sdk==0.5.1         # via okdata-aws, okdata-pipeline (setup.py)
 pandas==0.23.4            # via okdata-pipeline (setup.py)
 prettytable==2.0.0        # via okdata-sdk
 pyasn1==0.4.8             # via python-jose, rsa
+pydantic==1.7.2           # via okdata-aws
 pyjwt==1.7.1              # via okdata-sdk
 pyrsistent==0.17.3        # via jsonschema
 python-dateutil==2.8.1    # via botocore, okdata-pipeline (setup.py), pandas

@@ -20,10 +20,14 @@ provider:
     GIT_REV: ${git:branch}:${git:sha1}
     VERSION: ${self:custom.version}
   environment:
+    AUTHORIZER_API: ${ssm:/dataplatform/shared/api-gateway-url}/simple-dataset-authorizer
+    BUCKET_NAME: ok-origo-dataplatform-${self:provider.stage}
     GIT_REV: ${git:branch}:${git:sha1}
-    STAGE: ${self:provider.stage}
-    VERSION: ${self:custom.version}
+    KEYCLOAK_SERVER: ${ssm:/dataplatform/shared/keycloak-server-url}
     SERVICE_NAME: ${self:service}
+    STAGE: ${self:provider.stage}
+    STATUS_API_URL: ${ssm:/dataplatform/shared/api-gateway-url}/status-api
+    VERSION: ${self:custom.version}
 package:
   exclude:
     - '**/*'
@@ -33,6 +37,13 @@ package:
 functions:
   invoke:
     handler: okdata.pipeline.lambda_invoker.invoke
+  is-latest-edition:
+    handler: okdata.pipeline.writers.s3.handlers.is_latest_edition_handler
+    timeout: 60
+    tracing: Active
+    environment:
+      CLIENT_ID: s3-writer
+      CLIENT_SECRET: ${ssm:/dataplatform/s3-writer/keycloak-client-secret~true}
   validate_csv:
     handler: okdata.pipeline.validators.csv.validator.validate
     timeout: 60
@@ -45,6 +56,16 @@ functions:
     iamManagedPoliciesInherit: true
     iamManagedPolicies:
       - arn:aws:iam::#{AWS::AccountId}:policy/kinesis-writer-policy
+  write_s3:
+    handler: okdata.pipeline.writers.s3.handlers.copy
+    timeout: 900
+    tracing: Active
+    iamManagedPoliciesInherit: true
+    iamManagedPolicies:
+      - arn:aws:iam::#{AWS::AccountId}:policy/s3_writer_policy
+    environment:
+      CLIENT_ID: s3-writer
+      CLIENT_SECRET: ${ssm:/dataplatform/s3-writer/keycloak-client-secret~true}
   xls_to_csv:
     handler: okdata.pipeline.converters.xls.main.handler
     timeout: 120
@@ -52,10 +73,11 @@ functions:
       BUCKET_NAME: ok-origo-dataplatform-${self:provider.stage}
 
 plugins:
-  - serverless-python-requirements
+  - serverless-es-logs
+  - serverless-granular-iam
   - serverless-plugin-git-variables
   - serverless-pseudo-parameters
-  - serverless-es-logs
+  - serverless-python-requirements
 
 resources:
   Description: |
