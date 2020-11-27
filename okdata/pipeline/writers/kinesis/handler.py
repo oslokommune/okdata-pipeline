@@ -4,17 +4,34 @@ from dataclasses import asdict
 
 import boto3
 from aws_xray_sdk.core import patch_all, xray_recorder
+from requests.exceptions import HTTPError, Timeout
 
 from okdata.aws.logging import logging_wrapper, log_add
 from okdata.pipeline.models import Config, StepData
-from okdata.pipeline.writers.kinesis.dataset_client import DatasetClient
+from okdata.sdk.data.dataset import Dataset
 
 kinesis_client = boto3.client("kinesis", region_name="eu-west-1")
 s3_client = boto3.client("s3", region_name="eu-west-1")
 
-dataset_client = DatasetClient()
+dataset_client = Dataset()
 
 patch_all()
+
+
+def get_dataset(dataset_id, retries=2):
+    """Return the dataset belonging to `dataset_id`.
+
+    Retry calling the API `retries` number of times in the event of HTTP errors
+    or timeouts.
+
+    TODO: Use the SDK directly when/if it grows builtin support for retries.
+    """
+    try:
+        return dataset_client.get_dataset(dataset_id)
+    except (HTTPError, Timeout) as e:
+        if retries > 0:
+            return get_dataset(dataset_id, retries - 1)
+        raise e
 
 
 @logging_wrapper
@@ -26,7 +43,7 @@ def handle(event, context):
     version = pipeline_config.payload.output_dataset.version
     log_add(dataset_id=dataset_id, version=version)
 
-    dataset = dataset_client.get_dataset(dataset_id)
+    dataset = get_dataset(dataset_id)
     confidentiality = dataset["confidentiality"]
 
     output_stream_name = f"dp.{confidentiality}.{dataset_id}.processed.{version}.json"
