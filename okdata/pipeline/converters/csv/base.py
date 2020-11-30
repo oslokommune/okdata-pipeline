@@ -9,7 +9,7 @@ from okdata.aws.logging import log_add
 from okdata.pipeline.converters.csv.exceptions import ConversionError
 from okdata.pipeline.models import Config
 
-BUCKET = os.environ["BUCKET"]
+BUCKET = os.environ["BUCKET_NAME"]
 JSONSCHEMA_TO_DTYPE_MAP = {
     "string": "object",
     "integer": "float64",

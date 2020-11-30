@@ -81,8 +81,6 @@ functions:
   xls-to-csv:
     handler: okdata.pipeline.converters.xls.main.handler
     timeout: 120
-    environment:
-      BUCKET_NAME: ok-origo-dataplatform-${self:provider.stage}
 
 plugins:
   - serverless-es-logs
