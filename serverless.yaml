@@ -16,7 +16,6 @@ provider:
   iamManagedPolicies:
     - 'arn:aws:iam::#{AWS::AccountId}:policy/pipeline_component_policy'
     - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
-    - "arn:aws:iam::#{AWS::AccountId}:policy/pipeline_component_policy"
   tags:
     GIT_REV: ${git:branch}:${git:sha1}
     VERSION: ${self:custom.version}
