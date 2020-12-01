@@ -1,0 +1,3 @@
+Description: |
+  ${self:service} ${git:branch}:${git:sha1}
+  ${git:message}

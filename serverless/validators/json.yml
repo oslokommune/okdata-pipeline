@@ -1,0 +1,32 @@
+frameworkVersion: ">=2.10.0 <3.0.0"
+
+service: json-validator
+
+provider:
+  name: aws
+  runtime: ${file(serverless/provider.yml):runtime}
+  memorySize: ${file(serverless/provider.yml):memorySize}
+  region: ${file(serverless/provider.yml):region}
+  stage: ${file(serverless/provider.yml):stage}
+  deploymentBucket: ${file(serverless/provider.yml):deploymentBucket}
+  deploymentPrefix: ${file(serverless/provider.yml):deploymentPrefix}
+  rolePermissionsBoundary: ${file(serverless/provider.yml):rolePermissionsBoundary}
+  iamManagedPolicies: ${file(serverless/provider.yml):iamManagedPolicies}
+  tags: ${file(serverless/provider.yml):tags}
+  environment: ${file(serverless/provider.yml):environment}
+
+package: ${file(serverless/package.yml)}
+
+functions:
+  validate_json:
+    handler: okdata.pipeline.validators.json.handler.handle
+    timeout: 60
+
+plugins:
+  - serverless-python-requirements
+  - serverless-plugin-git-variables
+  - serverless-pseudo-parameters
+  - serverless-es-logs
+
+resources: ${file(serverless/resources.yml)}
+custom: ${file(serverless/custom.yml)}

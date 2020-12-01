@@ -1,0 +1,13 @@
+version: 0.1.0
+pythonRequirements:
+  dockerizePip: non-linux
+  slim: true
+  usePoetry: false
+esLogs:
+  endpoint: ${ssm:/dataplatform/shared/logs-elasticsearch-endpoint}
+  index: dataplatform-services
+  filterPattern: '{ $.function_name = "*" }'
+exportGitVariables: false
+deploymentBucket:
+  prod: ok-origo-dataplatform-config-prod
+  dev: ok-origo-dataplatform-config-dev
