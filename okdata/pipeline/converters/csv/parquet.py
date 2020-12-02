@@ -1,21 +1,72 @@
-import s3fs
-from fastparquet import write
+from dataclasses import asdict
 
-from okdata.pipeline.converters.csv.base import Exporter
+from pandas.errors import OutOfBoundsDatetime
+
+from okdata.aws.logging import log_add
+from okdata.pipeline.models import StepData
+from okdata.pipeline.converters.csv.base import BUCKET, Exporter
 
 
 class ParquetExporter(Exporter):
-    def __init__(self, event):
-        super().__init__(event)
+    def s3_prefix(self):
+        s3_prefix = (
+            self.config.payload.output_dataset.s3_prefix.replace(
+                "%stage%", "intermediate"
+            )
+            + self.config.task
+            + "/"
+        )
+        return s3_prefix
 
     def export(self):
-        df = self.read_csv()
-        if self.input_type == "s3":
-            s3 = s3fs.S3FileSystem()
-            open_with = s3.open
-            output_path = f"{Exporter.get_bucket()}/{self.output_value}"
-            write(output_path, df, open_with=open_with)
-        else:
-            output_path = self.get_output_path()
-            write(output_path, df)
-        return output_path
+        inputs = self.read_csv()
+        s3_prefix = self.s3_prefix()
+        outputs = []
+        schema = self.task_config.schema
+        errors = []
+        try:
+            for filename, source in inputs:
+                out_prefix = f"s3://{BUCKET}/" + s3_prefix + filename
+                if self.task_config.chunksize is None:
+                    outfile = f"{out_prefix}.parquet.gz"
+                    outputs.append(outfile)
+                    df = Exporter.set_date_columns_on_dataframe(source, schema)
+                    df.to_parquet(
+                        outfile, engine="fastparquet", compression="gzip", times="int96"
+                    )
+                else:
+                    for i, df in enumerate(source):
+                        df = Exporter.set_date_columns_on_dataframe(df, schema)
+                        outfile = f"{out_prefix}.part.{i}.parquet.gz"
+                        outputs.append(outfile)
+                        df.to_parquet(
+                            outfile,
+                            engine="fastparquet",
+                            compression="gzip",
+                            times="int96",
+                        )
+        except OutOfBoundsDatetime as e:
+            errors.append({"error": "OutOfBoundsDatetime", "message": str(e)})
+        except ValueError as e:
+            errors.append({"error": "ValueError", "message": str(e)})
+
+        if len(errors) > 0:
+            log_add(errors=errors)
+            return asdict(
+                StepData(
+                    status="CONVERSION_FAILED",
+                    errors=errors,
+                    s3_input_prefixes={
+                        self.config.payload.output_dataset.id: s3_prefix
+                    },
+                )
+            )
+
+        log_add(parquetfiles=outputs)
+        return asdict(
+            StepData(
+                status="CONVERSION_SUCCESS",
+                errors=[],
+                s3_input_prefixes={self.config.payload.output_dataset.id: s3_prefix},
+            )
+        )

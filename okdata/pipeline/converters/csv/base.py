@@ -24,50 +24,7 @@ DATE_FORMATS_INPUT_FORMAT = {
 }
 
 
-class Exporter(object):
-    def __init__(self, event):
-        self.event = event
-        self.delimiter = Exporter.get_delimiter(self.event)
-        self.input_type = self.event["input"]["type"]
-        self.input_value = self.event["input"]["value"]
-        self.output_type = self.event["output"]["type"]
-        self.output_value = self.event["output"].get("value", None)
-        log_add(**self.__dict__)
-
-    @staticmethod
-    def get_delimiter(event):
-        delimiter = event.get("delimiter", ",")
-        if delimiter == "tab":
-            delimiter = "\t"
-        return delimiter
-
-    @staticmethod
-    def get_bucket():
-        return BUCKET
-
-    def get_input_path(self):
-        if self.input_type == "s3":
-            return f"s3://{Exporter.get_bucket()}/{self.input_value}"
-        if self.input_type == "local":
-            return self.input_value
-
-    def get_output_path(self):
-        if self.output_type == "s3":
-            return f"s3://{Exporter.get_bucket()}/{self.output_value}"
-        if self.output_type == "local":
-            return self.output_value
-
-    def read_csv(self):
-        input = self.get_input_path()
-        if input.endswith(".gz"):
-            return pd.read_csv(input, compression="gzip", delimiter=self.delimiter)
-        return pd.read_csv(input, delimiter=self.delimiter)
-
-    def export(self):
-        raise NotImplementedError
-
-
-class NgExporter:
+class Exporter:
     def __init__(self, event):
         self.s3 = boto3.client("s3")
         self.s3fs_prefix = f"s3://{BUCKET}/"
@@ -138,10 +95,10 @@ class NgExporter:
         to be read in by pandas, and set each column to be of type object (default)
         """
         log_add(dtype_source="jsonschema")
-        dtype = NgExporter.jsonschema_to_dtypes(schema)
+        dtype = Exporter.jsonschema_to_dtypes(schema)
         if dtype is None:
             log_add(dtype_source=f"input:{input}")
-            dtype = NgExporter.get_dtype_from_input(input)
+            dtype = Exporter.get_dtype_from_input(input)
         log_add(dtype=dtype)
         return dtype
 
@@ -182,7 +139,7 @@ class NgExporter:
         to_datetime() will also throw ValueError if the date is invalid or not formatted
         according to the format found in DATE_FORMATS_INPUT_FORMAT
         """
-        date_columns_convert = NgExporter.get_convert_date_columns(schema)
+        date_columns_convert = Exporter.get_convert_date_columns(schema)
         if date_columns_convert is False:
             return df
         for column in date_columns_convert:
@@ -204,7 +161,7 @@ class NgExporter:
         files = []
         for s3_object in s3_objects:
             key = self.s3fs_prefix + s3_object["Key"]
-            dtype = NgExporter.get_dtype(schema, key)
+            dtype = Exporter.get_dtype(schema, key)
             df = self._read_csv_data(
                 key,
                 delimiter=self.task_config.delimiter,
@@ -212,7 +169,7 @@ class NgExporter:
                 dtype=dtype,
             )
             filename = key.split("/")[-1]
-            filename = NgExporter.remove_suffix(filename)
+            filename = Exporter.remove_suffix(filename)
             files.append((filename, df))
         return files
 
@@ -223,14 +180,12 @@ class NgExporter:
 @dataclass
 class TaskConfig(object):
     delimiter: str
-    format: str
 
-    def __init__(self, format, chunksize=None, delimiter=None, schema=None):
+    def __init__(self, chunksize=None, delimiter=None, schema=None):
         if delimiter == "tab":
             delimiter = "\t"
         elif delimiter is None:
             delimiter = ","
-        self.format = format
         self.chunksize = chunksize
         self.delimiter = delimiter
         self.schema = schema
@@ -239,7 +194,6 @@ class TaskConfig(object):
     def from_config(cls, config: Config):
         task_config = config.task_config
         return cls(
-            format=task_config["format"],
             chunksize=task_config.get("chunksize"),
             delimiter=task_config.get("delimiter"),
             schema=task_config.get("schema"),

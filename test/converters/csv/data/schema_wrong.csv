@@ -1,15 +1,8 @@
-utf8, bool, bool2, int
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345
-hello, 1, 0, 2345aa
+utf8,check,check2,count,date
+hello,1,0,2345,2020-01-01
+hello,1,0,2345,2020-01-01
+hello,1,0,2345,2020-01-01
+hello,1,,2345,2020-01-01
+hello,1,0,2345,2020-01-01
+hello,1,0,2345,2020-01-01
+hello,1,0,2345aa,2020-01-01
