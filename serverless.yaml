@@ -42,6 +42,9 @@ functions:
   write_kinesis:
     handler: okdata.pipeline.writers.kinesis.handler.handle
     timeout: 70
+    iamManagedPoliciesInherit: true
+    iamManagedPolicies:
+      - arn:aws:iam::#{AWS::AccountId}:policy/kinesis-writer-policy
   xls_to_csv:
     handler: okdata.pipeline.converters.xls.main.handler
     timeout: 120
