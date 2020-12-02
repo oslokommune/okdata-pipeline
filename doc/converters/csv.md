@@ -1,7 +1,7 @@
 # converters.csv
 
 ## Input
-```json
+```
 {
   "output": {
     "type": string, # e.g. s3 / inline / local
@@ -13,29 +13,29 @@
   },
   "delimiter": string, # "tab", defaults to "," if not set
 }
-
 ```
 
-`value` should either be a:
-- S3 prefix
+`value` should be either:
+- an S3 prefix
 - the inline object (for input, not used for output)
-- local path
+- a local path
 
 ## Analysis
 
 ### 2019.11.29: Large file support
-Processing large files with cvs to parquet is limited by memory, lambda will run
-out of memory on about 8-900MB of csv data (first discovered when Deichman sent
+Processing large files with CSV to Parquet is limited by memory. Lambda will run
+out of memory on about 8-900MB of CSV data (first discovered when Deichman sent
 data to the pipeline).
 
-Analysis on file from Deichman was done with the strategy to read X-lines in
-chunks and save each transformation from csv to parquet to separate files, and
-in the end run fastparquet.writer.merge() to calculate the metadata schema for
-the files. After writing files glue was run on the output folder to create a
-table that Athena could query from.
+Analysis on files from Deichman was done with the strategy to read X-lines in
+chunks and save each transformation from CSV to Parquet to separate files, and
+in the end run `fastparquet.writer.merge()` to calculate the metadata schema for
+the files. After writing files, Glue was run on the output folder to create a
+table that Athena could query.
 
 #### Unzipped file
 The result was as follows:
+
 ##### 1 - File: 1.08GB, 4434555 rows
 * Spent: 141.43s to read, convert and write 46 chunks with 100000 lines per chunk
 * Duration: 141534.66 ms	Billed Duration: 141600 ms	Memory Size: 1024 MB	Max Memory Used: 429 MB	Init Duration: 3283.37 ms
@@ -75,7 +75,7 @@ was found:
     resulted in longer processing time
 * A file just under the 5GB PUT limit (our current limitation for files in the
   dataplatform)
-  * about 7min execution time, well under 15min max time available for lambda
+  * about 7min execution time, well under 15min max time available for Lambda
   * time spent is about linear to file with 1/4 the size
 * The 2.27GB gzipped file (7.54GB raw) scales almost linear in time spent
   compared to 1GB unzipped file
@@ -84,19 +84,19 @@ was found:
   correct amount of rows compared to raw input
 
 #### Merging multiple files after split into 1 parq file
-fastparquet.write() can take a "append=True" parameter, but this mode is not
+`fastparquet.write()` can take an `append=True` parameter, but this mode is not
 supported when open_with is a s3fs pointer, and will end up with `raise
 NotImplementedError("File mode not supported")`.
 
-Setting file_scheme=hive does not make sense as it will try to open and write to
-a read-only filesystem in lambda environment.
+Setting `file_scheme=hive` does not make sense as it will try to open and write
+to a read-only filesystem in Lambda environment.
 
 #### Recommendations
 * Use .gz for all CSV files
 * Don't  upload more than 2.25GB gzipped or 4.5GB unzipped CSV
 * Lambda
   * set timeout: 15 minutes
-    * The gz file with 31million rows was well within this
+    * The gz file with 31 million rows was well within this
   * memory: 3008MB
     * Not 2048: to have room for big datasets per line (reading is done on
       row-count not on memory usage)
