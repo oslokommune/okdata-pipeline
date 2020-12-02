@@ -7,11 +7,11 @@ from enum import Enum
 import boto3
 from aws_xray_sdk.core import patch_all, xray_recorder
 
+from okdata.aws.logging import log_add, logging_wrapper
 from okdata.pipeline.models import Config
 from okdata.pipeline.validators.csv import string_reader
-from okdata.pipeline.validators.csv.jsonschema_validator import JsonSchemaValidator
 from okdata.pipeline.validators.csv.parser import ParseErrors, parse_csv
-from okdata.aws.logging import log_add, logging_wrapper
+from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
 patch_all()
 

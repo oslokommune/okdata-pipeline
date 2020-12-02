@@ -1,7 +1,7 @@
 import jsonschema
 
 from okdata.aws.logging import log_add
-from okdata.pipeline.validators.csv.jsonschema_checkers import (
+from okdata.pipeline.validators.jsonschema_checkers import (
     jsonschema_datetime,
     jsonschema_year,
 )
@@ -69,3 +69,9 @@ class JsonSchemaValidator:
                 errors.append({"row": row, "message": e.message})
 
         return errors
+
+    def validate_list(self, data: list):
+        def flatten(lst):
+            return [item for sublist in lst for item in sublist]
+
+        return flatten([self.validate(d) for d in data])

@@ -4,7 +4,7 @@ from aws_xray_sdk.core import patch_all, xray_recorder
 
 from okdata.aws.logging import log_add, logging_wrapper
 from okdata.pipeline.models import Config, StepData
-from okdata.pipeline.validators.json.jsonschema_validator import JsonSchemaValidator
+from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
 patch_all()
 
@@ -46,7 +46,9 @@ def handle(event, context):
 
     input_data = resolve_input_data(step_data)
 
-    validation_errors = JsonSchemaValidator(step_config.schema).validate(input_data)
+    validation_errors = JsonSchemaValidator(step_config.schema).validate_list(
+        input_data
+    )
 
     if validation_errors:
         return asdict(

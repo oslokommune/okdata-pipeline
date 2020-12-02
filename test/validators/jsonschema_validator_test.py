@@ -1,7 +1,7 @@
 import pytest
 
-from okdata.pipeline.validators.csv.jsonschema_validator import JsonSchemaValidator
 from okdata.pipeline.validators.csv.parser import parse_csv
+from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
 
 class TestValidJsonSchema:
@@ -83,3 +83,58 @@ class TestValidJsonSchema:
             )
             validation_errors = JsonSchemaValidator(dates_schema).validate(csv_data)
             assert len(validation_errors) == 1
+
+    def test_validate_list_correct_values(self, json_schema):
+        json_data = [
+            {
+                "id": "1",
+                "year": "2020",
+                "date": "2020-01-01",
+                "datetime": "2020-01-01T12:01:01",
+            },
+            {
+                "id": "1",
+                "year": "2020",
+                "date": "2020-01-01",
+                "datetime": "2020-12-01T12-01",
+            },
+        ]
+
+        validation_errors = JsonSchemaValidator(json_schema).validate_list(json_data)
+        assert len(validation_errors) == 0
+
+    def test_validate_list_invalid_date_colum(self, json_schema):
+        json_data = [
+            {
+                "id": "1",
+                "year": "2020",
+                "date": "garbish data",
+                "datetime": "2020-01-01T12:01:01",
+            }
+        ]
+        validation_errors = JsonSchemaValidator(json_schema).validate_list(json_data)
+        assert len(validation_errors) == 1
+
+    def test_validate_list_invalid_date_time_colum(self, json_schema):
+        json_data = [
+            {
+                "id": "1",
+                "year": "2020",
+                "date": "2020-01-01",
+                "datetime": "garbish data",
+            }
+        ]
+        validation_errors = JsonSchemaValidator(json_schema).validate_list(json_data)
+        assert len(validation_errors) == 1
+
+    def test_validate_list_invalid_year_colum(self, json_schema):
+        json_data = [
+            {
+                "id": "1",
+                "year": "garbish data",
+                "date": "2020-01-01",
+                "datetime": "2020-01-01T12:01:01",
+            }
+        ]
+        validation_errors = JsonSchemaValidator(json_schema).validate_list(json_data)
+        assert len(validation_errors) == 1
