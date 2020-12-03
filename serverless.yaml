@@ -37,6 +37,8 @@ package:
 functions:
   invoke:
     handler: okdata.pipeline.lambda_invoker.invoke
+    iamManagedPolicies:
+      - arn:aws:iam::#{AWS::AccountId}:policy/lambda-invoker-policy
   is-latest-edition:
     handler: okdata.pipeline.writers.s3.handlers.is_latest_edition_handler
     timeout: 60
