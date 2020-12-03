@@ -1,4 +1,4 @@
-frameworkVersion: ">=2.10.0 <3.0.0"
+frameworkVersion: ">=1.64.0 <2.0.0"
 
 service: okdata-pipeline
 
@@ -37,6 +37,7 @@ package:
 functions:
   invoke:
     handler: okdata.pipeline.lambda_invoker.invoke
+    iamRoleStatements: []
     iamManagedPolicies:
       - arn:aws:iam::#{AWS::AccountId}:policy/lambda-invoker-policy
   is-latest-edition:
@@ -55,6 +56,7 @@ functions:
   write_kinesis:
     handler: okdata.pipeline.writers.kinesis.handler.handle
     timeout: 70
+    iamRoleStatements: []
     iamManagedPoliciesInherit: true
     iamManagedPolicies:
       - arn:aws:iam::#{AWS::AccountId}:policy/kinesis-writer-policy
@@ -62,6 +64,7 @@ functions:
     handler: okdata.pipeline.writers.s3.handlers.copy
     timeout: 900
     tracing: Active
+    iamRoleStatements: []
     iamManagedPoliciesInherit: true
     iamManagedPolicies:
       - arn:aws:iam::#{AWS::AccountId}:policy/s3_writer_policy
