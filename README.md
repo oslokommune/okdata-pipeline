@@ -13,6 +13,7 @@ Dataplattform](https://oslokommune.github.io/dataplattform/).
   - [json](doc/validators/json.md)
 - writers
   - [kinesis](doc/writers/kinesis.md)
+  - [s3](doc/writers/s3.md)
 
 ## Setup
 
