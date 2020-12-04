@@ -32,7 +32,7 @@ package:
   exclude:
     - '**/*'
   include:
-    - okdata/pipeline/**/*.py
+    - okdata/**/*.py
 
 functions:
   invoke:
