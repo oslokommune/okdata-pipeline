@@ -18,6 +18,7 @@ setuptools.setup(
     packages=setuptools.find_namespace_packages(
         include="okdata.pipeline.*", exclude=["test*"]
     ),
+    namespace_packages=["okdata"],
     install_requires=[
         "aws-xray-sdk",
         "boto3",
