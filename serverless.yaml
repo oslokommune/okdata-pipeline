@@ -47,20 +47,20 @@ functions:
     environment:
       CLIENT_ID: s3-writer
       CLIENT_SECRET: ${ssm:/dataplatform/s3-writer/keycloak-client-secret~true}
-  validate_csv:
+  validate-csv:
     handler: okdata.pipeline.validators.csv.validator.validate
     timeout: 60
-  validate_json:
+  validate-json:
     handler: okdata.pipeline.validators.json.handler.handle
     timeout: 60
-  write_kinesis:
+  write-kinesis:
     handler: okdata.pipeline.writers.kinesis.handler.handle
     timeout: 70
     iamRoleStatements: []
     iamManagedPoliciesInherit: true
     iamManagedPolicies:
       - arn:aws:iam::#{AWS::AccountId}:policy/kinesis-writer-policy
-  write_s3:
+  write-s3:
     handler: okdata.pipeline.writers.s3.handlers.copy
     timeout: 900
     tracing: Active
@@ -71,7 +71,7 @@ functions:
     environment:
       CLIENT_ID: s3-writer
       CLIENT_SECRET: ${ssm:/dataplatform/s3-writer/keycloak-client-secret~true}
-  xls_to_csv:
+  xls-to-csv:
     handler: okdata.pipeline.converters.xls.main.handler
     timeout: 120
     environment:
