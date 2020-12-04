@@ -35,7 +35,7 @@ package:
     - okdata/**/*.py
 
 functions:
-  csv_to_parquet:
+  csv-to-parquet:
     handler: okdata.pipeline.converters.csv.handler.export
     memorySize: 3008
     timeout: 900
