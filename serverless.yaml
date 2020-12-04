@@ -88,7 +88,13 @@ custom:
   version: 0.1.0
   pythonRequirements:
     dockerizePip: non-linux
+    useDownloadCache: false
+    useStaticCache: false
     slim: true
+    slimPatternsAppendDefaults: false
+    slimPatterns:
+      - '**/*.py[c|o]'
+      - '**/__pycache__*'
     usePoetry: false
   esLogs:
     endpoint: ${ssm:/dataplatform/shared/logs-elasticsearch-endpoint}
