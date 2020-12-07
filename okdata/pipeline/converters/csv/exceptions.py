@@ -1,4 +1,3 @@
 class ConversionError(Exception):
-    @classmethod
-    def from_value_error(cls, ve: ValueError):
-        return cls("Cannot convert data according to json schema: " + str(ve))
+    def __init__(self, msg):
+        super().__init__(f"Cannot convert data according to JSON schema: {msg}")

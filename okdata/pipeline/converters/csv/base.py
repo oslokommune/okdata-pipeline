@@ -57,7 +57,7 @@ class Exporter:
             else:
                 df = pd.read_csv(s3_key, delimiter=delimiter, **kwargs)
         except ValueError as ve:
-            raise ConversionError.from_value_error(ve)
+            raise ConversionError(str(ve)) from ve
         return df
 
     @staticmethod
