@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from dataclasses import asdict
 
@@ -8,12 +9,17 @@ from requests.exceptions import HTTPError, Timeout
 
 from okdata.aws.logging import logging_wrapper, log_add
 from okdata.pipeline.models import Config, StepData
+from okdata.sdk.config import Config as OrigoSdkConfig
 from okdata.sdk.data.dataset import Dataset
 
 kinesis_client = boto3.client("kinesis", region_name="eu-west-1")
 s3_client = boto3.client("s3", region_name="eu-west-1")
 
-dataset_client = Dataset()
+origo_config = OrigoSdkConfig()
+origo_config.config["cacheCredentials"] = False
+origo_config.config["client_id"] = os.environ["CLIENT_ID"]
+origo_config.config["client_secret"] = os.environ["CLIENT_SECRET"]
+dataset_client = Dataset(origo_config)
 
 patch_all()
 
