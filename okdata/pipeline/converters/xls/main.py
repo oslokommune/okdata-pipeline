@@ -17,8 +17,6 @@ s3_client = boto3.client("s3")
 
 def handler(event, context):
     config = Config.from_lambda_event(event)
-    task = config.task
-    pipeline = config.payload.pipeline
     output_dataset = config.payload.output_dataset
     step_data = config.payload.step_data
 
@@ -31,9 +29,9 @@ def handler(event, context):
     input_dataset = list(input_prefixes)[0]
     input_prefix = input_prefixes[input_dataset]
     output_prefix = (
-        output_dataset.s3_prefix.replace("%stage%", "intermediate") + task + "/"
+        output_dataset.s3_prefix.replace("%stage%", "intermediate") + config.task + "/"
     )
-    table_config = TableConfig(pipeline.task_config.get(task))
+    table_config = TableConfig(config.task_config)
 
     response = s3_client.list_objects_v2(Bucket=BUCKET, Prefix=input_prefix)
 
