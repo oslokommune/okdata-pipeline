@@ -5,7 +5,6 @@ service: okdata-pipeline
 provider:
   name: aws
   runtime: python3.7
-  memorySize: 1024
   region: ${opt:region, 'eu-west-1'}
   stage: ${opt:stage, 'dev'}
   deploymentBucket:
@@ -36,6 +35,10 @@ package:
     - okdata/**/*.py
 
 functions:
+  csv-to-parquet:
+    handler: okdata.pipeline.converters.csv.handler.export
+    memorySize: 3008
+    timeout: 900
   invoke:
     handler: okdata.pipeline.lambda_invoker.invoke
     iamRoleStatements: []
@@ -78,8 +81,6 @@ functions:
   xls-to-csv:
     handler: okdata.pipeline.converters.xls.main.handler
     timeout: 120
-    environment:
-      BUCKET_NAME: ok-origo-dataplatform-${self:provider.stage}
 
 plugins:
   - serverless-es-logs
