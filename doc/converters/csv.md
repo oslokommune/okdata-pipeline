@@ -1,24 +1,14 @@
 # converters.csv
 
-## Input
+## Task config
+
 ```
 {
-  "output": {
-    "type": string, # e.g. s3 / inline / local
-    "value": string # optional
-  },
-  "input": {
-    "type": string, #e.g. s3 / inline / local
-    "value": string
-  },
-  "delimiter": string, # "tab", defaults to "," if not set
+  "chunksize": number,
+  "delimiter": string, # e.g. "tab", default is ","
+  "schema": object
 }
 ```
-
-`value` should be either:
-- an S3 prefix
-- the inline object (for input, not used for output)
-- a local path
 
 ## Analysis
 
