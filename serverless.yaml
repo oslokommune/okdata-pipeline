@@ -39,7 +39,7 @@ functions:
     handler: okdata.pipeline.converters.csv.handler.export
     memorySize: 3008
     timeout: 900
-  invoke:
+  invoke-lambda:
     handler: okdata.pipeline.lambda_invoker.invoke
     iamRoleStatements: []
     iamManagedPolicies:
