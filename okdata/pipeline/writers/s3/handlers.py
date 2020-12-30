@@ -30,8 +30,8 @@ dataset_client = Dataset(origo_config)
 
 @status_wrapper
 @logging_wrapper
-@xray_recorder.capture("copy")
-def copy(event, context):
+@xray_recorder.capture("write_s3")
+def write_s3(event, context):
     config = Config.from_lambda_event(event)
     task_config = TaskConfig.from_dict(config.task_config)
     output_dataset = config.payload.output_dataset
@@ -70,7 +70,7 @@ def copy(event, context):
             log_exception(e)
             raise DistributionNotCreated
 
-    if task_config.write_to_latest and is_latest_edition(
+    if task_config.write_to_latest and _is_latest_edition(
         output_dataset.id, output_dataset.version, output_dataset.edition
     ):
         write_data_to_latest(s3_sources, output_prefix)
@@ -125,21 +125,21 @@ def create_distribution_with_retries(output_dataset, copied_files, retries=3):
 
 @logging_wrapper
 @xray_recorder.capture("is_latest_edition")
-def is_latest_edition_handler(event, context):
+def is_latest_edition(event, context):
     config = Config.from_lambda_event(event)
     output = config.payload.step_data
     output_dataset = config.payload.output_dataset
-    output.status = is_latest_edition(
+    output.status = _is_latest_edition(
         output_dataset.id, output_dataset.version, output_dataset.edition
     )
     return asdict(output)
 
 
-def is_latest_edition(dataset_id, version, edition):
+def _is_latest_edition(dataset_id, version, edition):
     latest_edition_response = dataset_client.get_latest_edition(dataset_id, version)
     dataset_id, version_id, edition_id = latest_edition_response["Id"].split("/")
-    _is_latest_edition = (
+    is_latest = (
         dataset_id == dataset_id and version_id == version and edition_id == edition
     )
-    log_add(is_latest_edition=_is_latest_edition)
-    return _is_latest_edition
+    log_add(is_latest_edition=is_latest)
+    return is_latest

@@ -22,8 +22,8 @@ class StepConfig:
 
 
 @logging_wrapper
-@xray_recorder.capture("validate")
-def handle(event, context):
+@xray_recorder.capture("validate_json")
+def validate_json(event, context):
     config = Config.from_lambda_event(event)
     step_config = StepConfig.from_dict(config.task_config)
     step_data = config.payload.step_data

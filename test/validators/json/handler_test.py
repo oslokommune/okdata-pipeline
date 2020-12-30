@@ -8,7 +8,7 @@ from unittest.mock import ANY
 import pytest
 
 from okdata.pipeline.models import StepData
-from okdata.pipeline.validators.json.handler import handle
+from okdata.pipeline.validators.json.handler import validate_json
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
 test_data_directory = Path(os.path.dirname(__file__), "data")
@@ -32,7 +32,7 @@ lambda_event = {
 
 
 def test_validation_success(validation_success):
-    result = handle(lambda_event, {})
+    result = validate_json(lambda_event, {})
     JsonSchemaValidator.validate_list.assert_called_once_with(
         self=ANY, data=input_events
     )
@@ -46,7 +46,7 @@ def test_validation_success(validation_success):
 
 
 def test_validation_failed(validation_failure):
-    result = handle(lambda_event, {})
+    result = validate_json(lambda_event, {})
     JsonSchemaValidator.validate_list.assert_called_once_with(
         self=ANY, data=input_events
     )
@@ -62,7 +62,7 @@ def test_validation_failed(validation_failure):
 def test_no_schema_succeeds():
     lambda_event_no_schema = deepcopy(lambda_event)
     lambda_event_no_schema["payload"]["pipeline"]["task_config"][task_name] = None
-    result = handle(lambda_event_no_schema, {})
+    result = validate_json(lambda_event_no_schema, {})
     assert result == asdict(
         StepData(
             input_events=input_events,
@@ -78,13 +78,13 @@ def test_s3_input():
     lambda_event_s3["payload"]["step_data"]["s3_input_prefixes"] = {"foo": "bar"}
 
     with pytest.raises(NotImplementedError):
-        handle(lambda_event_s3, {})
+        validate_json(lambda_event_s3, {})
 
 
 def test_no_task_config_succeeds():
     lambda_event_no_task_config = deepcopy(lambda_event)
     lambda_event_no_task_config["payload"]["pipeline"]["task_config"] = None
-    result = handle(lambda_event_no_task_config, {})
+    result = validate_json(lambda_event_no_task_config, {})
     assert result == asdict(
         StepData(
             input_events=input_events,

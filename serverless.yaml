@@ -36,29 +36,29 @@ package:
 
 functions:
   csv-to-parquet:
-    handler: okdata.pipeline.converters.csv.handler.export
+    handler: okdata.pipeline.converters.csv.handler.csv_to_parquet
     memorySize: 3008
     timeout: 900
   invoke-lambda:
-    handler: okdata.pipeline.lambda_invoker.invoke
+    handler: okdata.pipeline.lambda_invoker.invoke_lambda
     iamRoleStatements: []
     iamManagedPolicies:
       - arn:aws:iam::#{AWS::AccountId}:policy/lambda-invoker-policy
   is-latest-edition:
-    handler: okdata.pipeline.writers.s3.handlers.is_latest_edition_handler
+    handler: okdata.pipeline.writers.s3.handlers.is_latest_edition
     timeout: 60
     tracing: Active
     environment:
       CLIENT_ID: s3-writer
       CLIENT_SECRET: ${ssm:/dataplatform/s3-writer/keycloak-client-secret~true}
   validate-csv:
-    handler: okdata.pipeline.validators.csv.validator.validate
+    handler: okdata.pipeline.validators.csv.validator.validate_csv
     timeout: 60
   validate-json:
-    handler: okdata.pipeline.validators.json.handler.handle
+    handler: okdata.pipeline.validators.json.handler.validate_json
     timeout: 60
   write-kinesis:
-    handler: okdata.pipeline.writers.kinesis.handler.handle
+    handler: okdata.pipeline.writers.kinesis.handler.write_kinesis
     timeout: 70
     iamRoleStatements: []
     iamManagedPoliciesInherit: true
@@ -68,7 +68,7 @@ functions:
       CLIENT_ID: kinesis-writer
       CLIENT_SECRET: ${ssm:/dataplatform/kinesis-writer/keycloak-client-secret~true}
   write-s3:
-    handler: okdata.pipeline.writers.s3.handlers.copy
+    handler: okdata.pipeline.writers.s3.handlers.write_s3
     timeout: 900
     tracing: Active
     iamRoleStatements: []
@@ -79,7 +79,7 @@ functions:
       CLIENT_ID: s3-writer
       CLIENT_SECRET: ${ssm:/dataplatform/s3-writer/keycloak-client-secret~true}
   xls-to-csv:
-    handler: okdata.pipeline.converters.xls.main.handler
+    handler: okdata.pipeline.converters.xls.main.xls_to_csv
     timeout: 120
 
 plugins:

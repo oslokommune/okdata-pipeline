@@ -27,7 +27,7 @@ def test_copy_to_processed_ok(
     mocker.spy(S3Service, "copy")
     mocker.spy(Dataset, "create_distribution")
     lambda_event = test_data.copy_event("processed")
-    response = handlers.copy(lambda_event, {})
+    response = handlers.write_s3(lambda_event, {})
 
     assert response == asdict(
         StepData(
@@ -59,7 +59,7 @@ def test_copy_to_cleaned_ok(
     mocker.spy(Dataset, "create_distribution")
 
     lambda_event = test_data.copy_event("cleaned")
-    response = handlers.copy(lambda_event, {})
+    response = handlers.write_s3(lambda_event, {})
 
     assert response == asdict(
         StepData(
@@ -89,7 +89,7 @@ def test_copy_to_processed_latest_ok(
     mocker.spy(Dataset, "create_distribution")
 
     lambda_event = test_data.copy_event("processed", write_to_latest=True)
-    response = handlers.copy(lambda_event, {})
+    response = handlers.write_s3(lambda_event, {})
 
     assert response == asdict(
         StepData(
@@ -142,7 +142,7 @@ def test_copy_to_processed_latest_edition_not_latest(
     lambda_event = test_data.copy_event(
         "processed", write_to_latest=True, edition=not_latest_edition
     )
-    response = handlers.copy(lambda_event, {})
+    response = handlers.write_s3(lambda_event, {})
 
     assert response == asdict(
         StepData(
@@ -174,7 +174,7 @@ def test_copy_to_processed_incomplete_transaction(
     lambda_event = test_data.copy_event("processed")
 
     with pytest.raises(IncompleteTransaction):
-        handlers.copy(lambda_event, {})
+        handlers.write_s3(lambda_event, {})
 
     S3Service.delete_from_prefix.assert_called_once_with(
         ANY, test_data.s3_output_prefix_processed
@@ -189,7 +189,7 @@ def test_copy_to_processed_distribution_not_created(
     lambda_event = test_data.copy_event("processed")
 
     with pytest.raises(DistributionNotCreated):
-        handlers.copy(lambda_event, {})
+        handlers.write_s3(lambda_event, {})
 
     S3Service.delete_from_prefix.assert_called_once_with(
         ANY, test_data.s3_output_prefix_processed
@@ -204,7 +204,7 @@ def test_copy_illegal_input_count(mock_status):
     }
 
     with pytest.raises(IllegalWrite) as e:
-        handlers.copy(lambda_event, {})
+        handlers.write_s3(lambda_event, {})
 
     assert (
         str(e)
@@ -215,7 +215,7 @@ def test_copy_illegal_input_count(mock_status):
 def test_is_latest_edition_handler(mock_get_latest_edition):
     lambda_event_latest_edition = test_data.copy_event("processed")
 
-    response = handlers.is_latest_edition_handler(lambda_event_latest_edition, {})
+    response = handlers.is_latest_edition(lambda_event_latest_edition, {})
 
     assert response == asdict(
         StepData(
@@ -229,7 +229,7 @@ def test_is_latest_edition_handler(mock_get_latest_edition):
         "processed", edition="20190120T133701"
     )
 
-    response = handlers.is_latest_edition_handler(lambda_event_not_latest_edition, {})
+    response = handlers.is_latest_edition(lambda_event_not_latest_edition, {})
 
     assert response == asdict(
         StepData(
