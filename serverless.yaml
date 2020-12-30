@@ -1,3 +1,4 @@
+# The `serverless-granular-iam` plugin only supports Serverless 1.x.
 frameworkVersion: ">=1.64.0 <2.0.0"
 
 service: okdata-pipeline
