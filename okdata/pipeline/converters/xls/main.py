@@ -15,7 +15,7 @@ s3 = boto3.resource("s3", region_name="eu-west-1")
 s3_client = boto3.client("s3")
 
 
-def handler(event, context):
+def xls_to_csv(event, context):
     config = Config.from_lambda_event(event)
     output_dataset = config.payload.output_dataset
     step_data = config.payload.step_data

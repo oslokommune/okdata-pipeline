@@ -35,7 +35,7 @@ test_event = {
 }
 
 
-def test_invoke(mocker):
+def test_invoke_lambda(mocker):
     client = mocker.patch.object(handler, "lambda_client")
     mocker.patch.object(
         handler,
@@ -48,7 +48,7 @@ def test_invoke(mocker):
             "errors": [],
         },
     )
-    handler.invoke(test_event, {})
+    handler.invoke_lambda(test_event, {})
     client.invoke.assert_called_with(
         FunctionName="bydelsfakta-data-processing-innvandrer-befolkning",
         Payload=json.dumps(test_event),

@@ -41,8 +41,8 @@ def get_dataset(dataset_id, retries=2):
 
 
 @logging_wrapper
-@xray_recorder.capture("handle")
-def handle(event, context):
+@xray_recorder.capture("write_kinesis")
+def write_kinesis(event, context):
     pipeline_config = Config.from_lambda_event(event)
 
     dataset_id = pipeline_config.payload.output_dataset.id

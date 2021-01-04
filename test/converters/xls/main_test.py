@@ -5,7 +5,7 @@ import boto3
 import pytest
 from moto import mock_s3
 
-from okdata.pipeline.converters.xls.main import handler
+from okdata.pipeline.converters.xls.main import xls_to_csv
 
 CWD = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(CWD, ".."))
@@ -64,7 +64,7 @@ expected_content = "A;B\n" + "1;foo\n" + "2;bar\n" + "3;baz\n"
 
 
 class MainTest:
-    def test_handler(self, s3_mock):
+    def test_xls_to_csv(self, s3_mock):
         excel_path = os.path.join(CWD, "data", "simple.xlsx")
         upload_key = "raw/green/dataset-in/1/20181115/simple.xlsx"
         output_prefix = "intermediate/yellow/dataset-out/1/20200123/xls2csv/"
@@ -73,7 +73,7 @@ class MainTest:
         with open(excel_path, "rb") as f:
             s3_mock.Object(bucket, upload_key).put(Body=f)
 
-        response = handler(event, 0)
+        response = xls_to_csv(event, 0)
         assert response["status"] == "OK"
         assert response["s3_input_prefixes"]["dataset-out"] == output_prefix
 
@@ -85,7 +85,7 @@ class MainTest:
 
         assert content == expected_content
 
-    def test_handler_multiple_files(self, s3_mock):
+    def test_xls_to_csv_multiple_files(self, s3_mock):
         excel_path = os.path.join(CWD, "data", "simple.xlsx")
         upload_prefix = "raw/green/dataset-in/1/20181115/"
         output_prefix = "intermediate/yellow/dataset-out/1/20200123/xls2csv/"
@@ -94,7 +94,7 @@ class MainTest:
             with open(excel_path, "rb") as f:
                 s3_mock.Object(bucket, upload_prefix + k).put(Body=f)
 
-        response = handler(event, 0)
+        response = xls_to_csv(event, 0)
         assert response["status"] == "OK"
         assert response["s3_input_prefixes"]["dataset-out"] == output_prefix
 
@@ -106,7 +106,7 @@ class MainTest:
 
             assert content == expected_content
 
-    def test_handler_default_config(self, s3_mock):
+    def test_xls_to_csv_default_config(self, s3_mock):
         excel_path = os.path.join(CWD, "data", "simple.xlsx")
         upload_key = "raw/green/dataset-in/1/20181115/simple.xlsx"
         output_prefix = "intermediate/yellow/dataset-out/1/20200123/xls2csv/"
@@ -115,7 +115,7 @@ class MainTest:
         with open(excel_path, "rb") as f:
             s3_mock.Object(bucket, upload_key).put(Body=f)
 
-        response = handler(event_default, 0)
+        response = xls_to_csv(event_default, 0)
         assert response["status"] == "OK"
         assert response["s3_input_prefixes"]["dataset-out"] == output_prefix
 

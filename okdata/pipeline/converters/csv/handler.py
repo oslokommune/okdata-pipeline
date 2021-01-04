@@ -5,6 +5,6 @@ from okdata.pipeline.converters.csv.parquet import ParquetExporter
 
 
 @logging_wrapper("csv-exporter")
-@xray_recorder.capture("export")
-def export(event, context=None):
+@xray_recorder.capture("csv_to_parquet")
+def csv_to_parquet(event, context=None):
     return ParquetExporter(event).export()

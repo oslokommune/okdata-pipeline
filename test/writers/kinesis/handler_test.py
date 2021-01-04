@@ -42,13 +42,13 @@ def test_get_dataset_retries(
 
 
 @freeze_time(utc_now)
-def test_handler(mock_uuid, kinesis_writer, mock_dataset_client):
+def test_write_kinesis(mock_uuid, kinesis_writer, mock_dataset_client):
     destination_stream_name = (
         f"dp.{confidentiality}.{dataset_id}.processed.{version}.json"
     )
     create_stream(destination_stream_name)
 
-    kinesis_writer.handle(lambda_event, {})
+    kinesis_writer.write_kinesis(lambda_event, {})
 
     records_on_destination_stream = get_records_from_stream(destination_stream_name)
     expected = [

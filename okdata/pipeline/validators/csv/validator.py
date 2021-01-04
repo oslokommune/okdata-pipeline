@@ -44,8 +44,8 @@ class StepConfig:
 
 
 @logging_wrapper
-@xray_recorder.capture("validate")
-def validate(event, context):
+@xray_recorder.capture("validate_csv")
+def validate_csv(event, context):
     config = Config.from_lambda_event(event)
 
     step_config = StepConfig.from_task_config(config.task_config)

@@ -12,8 +12,8 @@ lambda_client = boto3.client("lambda", "eu-west-1")
 
 
 @logging_wrapper("lambda-invoker")
-@xray_recorder.capture("invoke")
-def invoke(event, context):
+@xray_recorder.capture("invoke_lambda")
+def invoke_lambda(event, context):
     config = Config.from_lambda_event(event)
     function_arn = config.payload.pipeline.task_config.get(config.task).get("arn")
 
