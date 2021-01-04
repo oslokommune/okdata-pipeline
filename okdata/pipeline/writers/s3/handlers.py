@@ -123,18 +123,6 @@ def create_distribution_with_retries(output_dataset, copied_files, retries=3):
             raise e
 
 
-@logging_wrapper
-@xray_recorder.capture("is_latest_edition_s3")
-def is_latest_edition_s3(event, context):
-    config = Config.from_lambda_event(event)
-    output = config.payload.step_data
-    output_dataset = config.payload.output_dataset
-    output.status = is_latest_edition(
-        output_dataset.id, output_dataset.version, output_dataset.edition
-    )
-    return asdict(output)
-
-
 def is_latest_edition(dataset_id, version, edition):
     latest_edition_response = dataset_client.get_latest_edition(dataset_id, version)
     dataset_id, version_id, edition_id = latest_edition_response["Id"].split("/")

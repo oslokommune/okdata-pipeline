@@ -212,34 +212,6 @@ def test_copy_illegal_input_count(mock_status):
     )
 
 
-def test_is_latest_edition_s3(mock_get_latest_edition):
-    lambda_event_latest_edition = test_data.copy_event("processed")
-
-    response = handlers.is_latest_edition_s3(lambda_event_latest_edition, {})
-
-    assert response == asdict(
-        StepData(
-            status=True,
-            errors=[],
-            s3_input_prefixes={test_data.dataset_id: test_data.s3_input_prefix},
-        )
-    )
-
-    lambda_event_not_latest_edition = test_data.copy_event(
-        "processed", edition="20190120T133701"
-    )
-
-    response = handlers.is_latest_edition_s3(lambda_event_not_latest_edition, {})
-
-    assert response == asdict(
-        StepData(
-            status=False,
-            errors=[],
-            s3_input_prefixes={test_data.dataset_id: test_data.s3_input_prefix},
-        )
-    )
-
-
 @pytest.fixture
 def mock_s3_service_ok(monkeypatch):
     def copy(self, s3_sources, output_prefix):
