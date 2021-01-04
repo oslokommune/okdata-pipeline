@@ -45,13 +45,6 @@ functions:
     iamRoleStatements: []
     iamManagedPolicies:
       - arn:aws:iam::#{AWS::AccountId}:policy/lambda-invoker-policy
-  is-latest-edition-s3:
-    handler: okdata.pipeline.writers.s3.handlers.is_latest_edition_s3
-    timeout: 60
-    tracing: Active
-    environment:
-      CLIENT_ID: s3-writer
-      CLIENT_SECRET: ${ssm:/dataplatform/s3-writer/keycloak-client-secret~true}
   validate-csv:
     handler: okdata.pipeline.validators.csv.validator.validate_csv
     timeout: 60
