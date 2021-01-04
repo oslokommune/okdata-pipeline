@@ -212,10 +212,10 @@ def test_copy_illegal_input_count(mock_status):
     )
 
 
-def test_is_latest_edition_handler(mock_get_latest_edition):
+def test_is_latest_edition_s3(mock_get_latest_edition):
     lambda_event_latest_edition = test_data.copy_event("processed")
 
-    response = handlers.is_latest_edition(lambda_event_latest_edition, {})
+    response = handlers.is_latest_edition_s3(lambda_event_latest_edition, {})
 
     assert response == asdict(
         StepData(
@@ -229,7 +229,7 @@ def test_is_latest_edition_handler(mock_get_latest_edition):
         "processed", edition="20190120T133701"
     )
 
-    response = handlers.is_latest_edition(lambda_event_not_latest_edition, {})
+    response = handlers.is_latest_edition_s3(lambda_event_not_latest_edition, {})
 
     assert response == asdict(
         StepData(

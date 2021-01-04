@@ -44,8 +44,8 @@ functions:
     iamRoleStatements: []
     iamManagedPolicies:
       - arn:aws:iam::#{AWS::AccountId}:policy/lambda-invoker-policy
-  is-latest-edition:
-    handler: okdata.pipeline.writers.s3.handlers.is_latest_edition
+  is-latest-edition-s3:
+    handler: okdata.pipeline.writers.s3.handlers.is_latest_edition_s3
     timeout: 60
     tracing: Active
     environment:

@@ -70,7 +70,7 @@ def write_s3(event, context):
             log_exception(e)
             raise DistributionNotCreated
 
-    if task_config.write_to_latest and _is_latest_edition(
+    if task_config.write_to_latest and is_latest_edition(
         output_dataset.id, output_dataset.version, output_dataset.edition
     ):
         write_data_to_latest(s3_sources, output_prefix)
@@ -124,18 +124,18 @@ def create_distribution_with_retries(output_dataset, copied_files, retries=3):
 
 
 @logging_wrapper
-@xray_recorder.capture("is_latest_edition")
-def is_latest_edition(event, context):
+@xray_recorder.capture("is_latest_edition_s3")
+def is_latest_edition_s3(event, context):
     config = Config.from_lambda_event(event)
     output = config.payload.step_data
     output_dataset = config.payload.output_dataset
-    output.status = _is_latest_edition(
+    output.status = is_latest_edition(
         output_dataset.id, output_dataset.version, output_dataset.edition
     )
     return asdict(output)
 
 
-def _is_latest_edition(dataset_id, version, edition):
+def is_latest_edition(dataset_id, version, edition):
     latest_edition_response = dataset_client.get_latest_edition(dataset_id, version)
     dataset_id, version_id, edition_id = latest_edition_response["Id"].split("/")
     is_latest = (
