@@ -18,11 +18,11 @@ idna==2.10                # via requests
 jmespath==0.10.0          # via boto3, botocore
 jsonpickle==1.4.2         # via aws-xray-sdk
 jsonschema==3.2.0         # via okdata-pipeline (setup.py), okdata-sdk
-llvmlite==0.35.0          # via numba
-numba==0.52.0             # via fastparquet
-numpy==1.19.4             # via fastparquet, numba, pandas
-okdata-aws==0.2.0         # via okdata-pipeline (setup.py)
-okdata-sdk==0.5.1         # via okdata-aws, okdata-pipeline (setup.py)
+llvmlite==0.34.0          # via numba
+numba==0.51.2             # via fastparquet
+numpy==1.19.5             # via fastparquet, numba, pandas
+okdata-aws==0.3.0         # via okdata-pipeline (setup.py)
+okdata-sdk==0.5.2         # via okdata-aws, okdata-pipeline (setup.py)
 packaging==20.7           # via fastparquet
 pandas==0.23.4            # via fastparquet, okdata-pipeline (setup.py)
 prettytable==2.0.0        # via okdata-sdk
