@@ -22,9 +22,9 @@ setuptools.setup(
     install_requires=[
         "aws-xray-sdk",
         "boto3",
-        "fastparquet",
+        "fastparquet<0.5.0",
         "jsonschema",
-        "okdata-aws>=0.2.0",
+        "okdata-aws>=0.3.0",
         "okdata-sdk>=0.5.1",
         "pandas<0.24",
         "python-dateutil",
