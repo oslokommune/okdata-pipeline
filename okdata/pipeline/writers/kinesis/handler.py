@@ -8,6 +8,7 @@ from aws_xray_sdk.core import patch_all, xray_recorder
 from requests.exceptions import HTTPError, Timeout
 
 from okdata.aws.logging import logging_wrapper, log_add
+from okdata.pipeline.common import CONFIDENTIALITY_MAP
 from okdata.pipeline.models import Config, StepData
 from okdata.sdk.config import Config as OrigoSdkConfig
 from okdata.sdk.data.dataset import Dataset
@@ -50,7 +51,8 @@ def write_kinesis(event, context):
     log_add(dataset_id=dataset_id, version=version)
 
     dataset = get_dataset(dataset_id)
-    confidentiality = dataset["confidentiality"]
+    access_rights = dataset["accessRights"]
+    confidentiality = CONFIDENTIALITY_MAP[access_rights]
 
     output_stream_name = f"dp.{confidentiality}.{dataset_id}.processed.{version}.json"
     log_add(output_stream_name=output_stream_name)

@@ -15,6 +15,7 @@ utc_now = "2019-06-26T08:55:00+00:00"
 uuid_str = "d80ef25f-5f97-4326-b524-50154006f0ba"
 dataset_id = "some-id"
 version = "some_version"
+access_rights = "public"
 confidentiality = "green"
 
 input_events = [{"foo": "bar"}, {"foo": "car"}]
@@ -90,6 +91,6 @@ def mock_dataset_client(monkeypatch):
     def get_dataset(self, dataset_id):
         if dataset_id == "error":
             raise HTTPError
-        return {"confidentiality": confidentiality}
+        return {"accessRights": access_rights}
 
     monkeypatch.setattr(Dataset, "get_dataset", get_dataset)
