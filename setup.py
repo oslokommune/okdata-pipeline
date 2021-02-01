@@ -24,7 +24,7 @@ setuptools.setup(
         "boto3",
         "fastparquet<0.5.0",
         "jsonschema",
-        "okdata-aws>=0.3.0",
+        "okdata-aws>=0.3.1",
         "okdata-sdk>=0.5.1",
         "pandas<0.24",
         "python-dateutil",
