@@ -8,23 +8,23 @@ attrs==20.3.0
     # via jsonschema
 aws-xray-sdk==2.6.0
     # via okdata-pipeline (setup.py)
-boto3==1.16.29
+boto3==1.16.63
     # via okdata-pipeline (setup.py)
-botocore==1.19.29
+botocore==1.19.63
     # via
     #   aws-xray-sdk
     #   boto3
     #   s3fs
     #   s3transfer
-certifi==2020.11.8
+certifi==2020.12.5
     # via requests
-chardet==3.0.4
+chardet==4.0.0
     # via requests
 ecdsa==0.14.1
     # via python-jose
-fastparquet==0.4.1
+fastparquet==0.5.0
     # via okdata-pipeline (setup.py)
-fsspec==0.8.4
+fsspec==0.8.5
     # via s3fs
 future==0.18.2
     # via aws-xray-sdk
@@ -34,30 +34,28 @@ jmespath==0.10.0
     # via
     #   boto3
     #   botocore
-jsonpickle==1.4.2
+jsonpickle==1.5.1
     # via aws-xray-sdk
 jsonschema==3.2.0
     # via
     #   okdata-pipeline (setup.py)
     #   okdata-sdk
-llvmlite==0.34.0
+llvmlite==0.35.0
     # via numba
-numba==0.51.2
+numba==0.52.0
     # via fastparquet
-numpy==1.19.5
+numpy==1.20.0
     # via
     #   fastparquet
     #   numba
     #   pandas
 okdata-aws==0.3.1
     # via okdata-pipeline (setup.py)
-okdata-sdk==0.5.2
+okdata-sdk==0.6.1
     # via
     #   okdata-aws
     #   okdata-pipeline (setup.py)
-packaging==20.7
-    # via fastparquet
-pandas==0.23.4
+pandas==1.2.1
     # via
     #   fastparquet
     #   okdata-pipeline (setup.py)
@@ -69,10 +67,8 @@ pyasn1==0.4.8
     #   rsa
 pydantic==1.7.3
     # via okdata-aws
-pyjwt==1.7.1
+pyjwt==2.0.1
     # via okdata-sdk
-pyparsing==2.4.7
-    # via packaging
 pyrsistent==0.17.3
     # via jsonschema
 python-dateutil==2.8.1
@@ -82,35 +78,33 @@ python-dateutil==2.8.1
     #   pandas
 python-jose==3.2.0
     # via python-keycloak
-python-keycloak==0.23.0
+python-keycloak==0.24.0
     # via okdata-sdk
-pytz==2020.4
+pytz==2021.1
     # via pandas
-requests==2.25.0
+requests==2.25.1
     # via
     #   okdata-pipeline (setup.py)
     #   okdata-sdk
     #   python-keycloak
-rsa==4.6
+rsa==4.7
     # via python-jose
 s3fs==0.4.2
     # via okdata-pipeline (setup.py)
-s3transfer==0.3.3
+s3transfer==0.3.4
     # via boto3
 six==1.15.0
     # via
     #   ecdsa
-    #   fastparquet
     #   jsonschema
     #   python-dateutil
     #   python-jose
-    #   structlog
     #   thrift
-structlog==20.1.0
+structlog==20.2.0
     # via okdata-aws
 thrift==0.13.0
     # via fastparquet
-urllib3==1.26.2
+urllib3==1.26.3
     # via
     #   botocore
     #   okdata-sdk
