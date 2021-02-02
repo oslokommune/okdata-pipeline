@@ -22,16 +22,17 @@ setuptools.setup(
     install_requires=[
         "aws-xray-sdk",
         "boto3",
-        "fastparquet<0.5.0",
+        "fastparquet",
         "jsonschema",
         "okdata-aws>=0.3.1",
-        "okdata-sdk>=0.5.1",
-        "pandas<0.24",
+        "okdata-sdk>=0.6.1",
+        "pandas",
         "python-dateutil",
         "requests",
         # Newer versions of s3fs cause dependency resolution issues:
         # https://github.com/dask/s3fs/issues/357
         "s3fs<=0.4.2",
-        "xlrd",
+        # Newer versions drop support for newer Excel files (.xlsx)
+        "xlrd<2.0",
     ],
 )

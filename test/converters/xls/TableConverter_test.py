@@ -53,6 +53,17 @@ subtables_config = TableConfig(
     }
 )
 
+invalid_subtables_config = TableConfig(
+    {
+        "sheet_name": "Sheet1",
+        "table_has_header": True,
+        "table_sources": [
+            {"start_row": 2, "start_col": 1},
+            {"start_row": 2, "start_col": 4},
+        ],
+    }
+)
+
 extra_col_config = TableConfig(
     {
         "sheet_name": "Sheet1",
@@ -139,6 +150,12 @@ class Tester(unittest.TestCase):
         self.assertEqual(list(df.values[3]), [4, "hei"])
         self.assertEqual(list(df.values[6]), [7, "ciao"])
         self.assertEqual(df.size, 14)
+
+    def test_invalid_subtable_config(self):
+        conv = TableConverter(invalid_subtables_config)
+        wb = conv.read_excel_table(os.path.join(CWD, "data", "subtables.xlsx"))
+        with self.assertRaises(ValueError):
+            conv.convert_table(wb)
 
     def test_extra_column(self):
         conv = TableConverter(extra_col_config)

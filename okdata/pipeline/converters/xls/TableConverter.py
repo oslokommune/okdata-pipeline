@@ -60,6 +60,12 @@ class TableConverter(object):
         """
         df = None
 
+        num_subtables = len(self.config.table_sources)
+        if num_subtables > 1 and not self.config.column_names:
+            raise ValueError(
+                "Reading multiple subtables requires setting column names explicitly"
+            )
+
         for ts in self.config.table_sources:
             df_ts = self.extract_sub_table(wb, ts)
 
@@ -82,17 +88,19 @@ class TableConverter(object):
         start_row = table_source.start_row - 1
         start_col = table_source.start_col - 1
 
+        num_subtables = len(self.config.table_sources)
+
         if self.config.column_names:
             num_columns = len(self.config.column_names)
             cols = list(range(start_col, start_col + num_columns))
         else:
             cols = None
 
-        if self.config.table_has_header:
-            header_arg = 0
+        header_arg = 0 if self.config.table_has_header else None
+
+        if self.config.table_has_header and num_subtables == 1:
             names_arg = None
         else:
-            header_arg = None
             names_arg = self.config.column_names
 
         try:
