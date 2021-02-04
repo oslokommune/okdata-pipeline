@@ -34,5 +34,7 @@ setuptools.setup(
         "s3fs<=0.4.2",
         # Newer versions drop support for newer Excel files (.xlsx)
         "xlrd<2.0",
+        # Temporary fix; should be required through the SDK itself.
+        "PyJWT<2.0",
     ],
 )
