@@ -67,8 +67,10 @@ pyasn1==0.4.8
     #   rsa
 pydantic==1.7.3
     # via okdata-aws
-pyjwt==2.0.1
-    # via okdata-sdk
+pyjwt==1.7.1
+    # via
+    #   okdata-pipeline (setup.py)
+    #   okdata-sdk
 pyrsistent==0.17.3
     # via jsonschema
 python-dateutil==2.8.1
