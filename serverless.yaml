@@ -8,6 +8,7 @@ provider:
   runtime: python3.7
   region: ${opt:region, 'eu-west-1'}
   stage: ${opt:stage, 'dev'}
+  timeout: 60
   deploymentBucket:
     name: ${self:custom.deploymentBucket.${self:provider.stage}, self:custom.deploymentBucket.dev}
     serverSideEncryption: AES256
@@ -47,10 +48,8 @@ functions:
       - arn:aws:iam::#{AWS::AccountId}:policy/lambda-invoker-policy
   validate-csv:
     handler: okdata.pipeline.validators.csv.validator.validate_csv
-    timeout: 60
   validate-json:
     handler: okdata.pipeline.validators.json.handler.validate_json
-    timeout: 60
   write-kinesis:
     handler: okdata.pipeline.writers.kinesis.handler.write_kinesis
     timeout: 70
