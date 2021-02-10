@@ -5,7 +5,6 @@ from dataclasses import asdict
 
 import boto3
 from aws_xray_sdk.core import patch_all, xray_recorder
-from requests.exceptions import HTTPError, Timeout
 
 from okdata.aws.logging import logging_wrapper, log_add
 from okdata.pipeline.common import CONFIDENTIALITY_MAP
@@ -25,22 +24,6 @@ dataset_client = Dataset(origo_config)
 patch_all()
 
 
-def get_dataset(dataset_id, retries=2):
-    """Return the dataset belonging to `dataset_id`.
-
-    Retry calling the API `retries` number of times in the event of HTTP errors
-    or timeouts.
-
-    TODO: Use the SDK directly when/if it grows builtin support for retries.
-    """
-    try:
-        return dataset_client.get_dataset(dataset_id)
-    except (HTTPError, Timeout) as e:
-        if retries > 0:
-            return get_dataset(dataset_id, retries - 1)
-        raise e
-
-
 @logging_wrapper
 @xray_recorder.capture("write_kinesis")
 def write_kinesis(event, context):
@@ -50,7 +33,7 @@ def write_kinesis(event, context):
     version = pipeline_config.payload.output_dataset.version
     log_add(dataset_id=dataset_id, version=version)
 
-    dataset = get_dataset(dataset_id)
+    dataset = dataset_client.get_dataset(dataset_id, retries=3)
     access_rights = dataset["accessRights"]
     confidentiality = CONFIDENTIALITY_MAP[access_rights]
 
