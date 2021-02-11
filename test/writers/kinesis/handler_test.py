@@ -31,17 +31,6 @@ lambda_event = lambda_event = {
 }
 
 
-def test_get_dataset_retries(
-    kinesis_writer, requests_mock, mocker, mock_dataset_client
-):
-    mocker.spy(kinesis_writer, "get_dataset")
-
-    with pytest.raises(HTTPError):
-        kinesis_writer.get_dataset("error", retries=2)
-
-    assert kinesis_writer.get_dataset.call_count == 3
-
-
 @freeze_time(utc_now)
 def test_write_kinesis(mock_uuid, kinesis_writer, mock_dataset_client):
     destination_stream_name = (
@@ -88,7 +77,7 @@ def kinesis_writer():
 
 @pytest.fixture
 def mock_dataset_client(monkeypatch):
-    def get_dataset(self, dataset_id):
+    def get_dataset(self, dataset_id, retries=0):
         if dataset_id == "error":
             raise HTTPError
         return {"accessRights": access_rights}
