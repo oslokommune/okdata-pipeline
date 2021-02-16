@@ -9,6 +9,7 @@ class S3Source:
 
 class Distribution:
     def __init__(self, filenames: list):
+        self.distribution_type = "file"
         self.filenames = filenames
 
 

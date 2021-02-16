@@ -47,7 +47,10 @@ def test_copy_to_processed_ok(
         test_data.dataset_id,
         test_data.version,
         test_data.edition,
-        {"filenames": test_data.filenames},
+        {
+            "distribution_type": "file",
+            "filenames": test_data.filenames,
+        },
     )
 
 
@@ -118,7 +121,10 @@ def test_copy_to_processed_latest_ok(
         test_data.dataset_id,
         test_data.version,
         test_data.edition,
-        {"filenames": test_data.filenames},
+        {
+            "distribution_type": "file",
+            "filenames": test_data.filenames,
+        },
     )
 
 
@@ -162,7 +168,10 @@ def test_copy_to_processed_latest_edition_not_latest(
         test_data.dataset_id,
         test_data.version,
         not_latest_edition,
-        {"filenames": test_data.filenames},
+        {
+            "distribution_type": "file",
+            "filenames": test_data.filenames,
+        },
     )
 
 
