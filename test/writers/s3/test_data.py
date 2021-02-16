@@ -43,6 +43,7 @@ def copy_event(output_stage, write_to_latest=False, edition=edition):
                     "write_to_s3": {
                         "output_stage": output_stage,
                         "write_to_latest": write_to_latest,
+                        "content_type": "application/json",
                     },
                 },
             },

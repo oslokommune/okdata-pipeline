@@ -49,6 +49,28 @@ def test_copy_to_processed_ok(
         test_data.edition,
         {
             "distribution_type": "file",
+            "content_type": "application/json",
+            "filenames": test_data.filenames,
+        },
+    )
+
+
+def test_copy_to_processed_ok_without_content_type(
+    mock_s3_service_ok, mock_dataset_create_distribution_ok, mock_status, mocker
+):
+    mocker.spy(Dataset, "create_distribution")
+    lambda_event = test_data.copy_event("processed")
+    task_config = lambda_event["payload"]["pipeline"]["task_config"]
+    task_config["write_to_s3"].pop("content_type")
+    handlers.write_s3(lambda_event, {})
+
+    Dataset.create_distribution.assert_called_once_with(
+        ANY,
+        test_data.dataset_id,
+        test_data.version,
+        test_data.edition,
+        {
+            "distribution_type": "file",
             "filenames": test_data.filenames,
         },
     )
@@ -123,6 +145,7 @@ def test_copy_to_processed_latest_ok(
         test_data.edition,
         {
             "distribution_type": "file",
+            "content_type": "application/json",
             "filenames": test_data.filenames,
         },
     )
@@ -170,6 +193,7 @@ def test_copy_to_processed_latest_edition_not_latest(
         not_latest_edition,
         {
             "distribution_type": "file",
+            "content_type": "application/json",
             "filenames": test_data.filenames,
         },
     )
