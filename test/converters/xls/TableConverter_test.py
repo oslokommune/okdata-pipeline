@@ -93,7 +93,7 @@ class Tester(unittest.TestCase):
         conv = TableConverter(wrong_sheet_name_config)
         wb = conv.read_excel_table(os.path.join(CWD, "data", "simple.xlsx"))
 
-        with self.assertRaises(OSError):
+        with self.assertRaises(ValueError):
             conv.extract_sub_table(wb, wrong_sheet_name_config.table_sources[0])
 
     def test_read_wo_header(self):
