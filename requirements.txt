@@ -8,9 +8,9 @@ attrs==20.3.0
     # via jsonschema
 aws-xray-sdk==2.6.0
     # via okdata-pipeline (setup.py)
-boto3==1.16.63
+boto3==1.17.8
     # via okdata-pipeline (setup.py)
-botocore==1.19.63
+botocore==1.20.8
     # via
     #   aws-xray-sdk
     #   boto3
@@ -34,7 +34,7 @@ jmespath==0.10.0
     # via
     #   boto3
     #   botocore
-jsonpickle==1.5.1
+jsonpickle==2.0.0
     # via aws-xray-sdk
 jsonschema==3.2.0
     # via
@@ -44,18 +44,18 @@ llvmlite==0.35.0
     # via numba
 numba==0.52.0
     # via fastparquet
-numpy==1.20.0
+numpy==1.20.1
     # via
     #   fastparquet
     #   numba
     #   pandas
-okdata-aws==0.3.1
+okdata-aws==0.3.2
     # via okdata-pipeline (setup.py)
-okdata-sdk==0.6.1
+okdata-sdk==0.6.2
     # via
     #   okdata-aws
     #   okdata-pipeline (setup.py)
-pandas==1.2.1
+pandas==1.2.2
     # via
     #   fastparquet
     #   okdata-pipeline (setup.py)
@@ -89,7 +89,7 @@ requests==2.25.1
     #   okdata-pipeline (setup.py)
     #   okdata-sdk
     #   python-keycloak
-rsa==4.7
+rsa==4.7.1
     # via python-jose
 s3fs==0.4.2
     # via okdata-pipeline (setup.py)

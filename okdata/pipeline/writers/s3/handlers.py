@@ -36,6 +36,7 @@ def write_s3(event, context):
     task_config = TaskConfig.from_dict(config.task_config)
     output_dataset = config.payload.output_dataset
     step_data = config.payload.step_data
+    content_type = task_config.content_type
 
     log_add(
         dataset_id=output_dataset.id,
@@ -45,6 +46,9 @@ def write_s3(event, context):
         write_to_latest=task_config.write_to_latest,
         output_stage=task_config.output_stage,
     )
+    if content_type:
+        log_add(content_type=content_type)
+
     status_add(
         domain="dataset",
         domain_id=f"{output_dataset.id}/{output_dataset.version}",
@@ -64,7 +68,7 @@ def write_s3(event, context):
 
     if task_config.output_stage == "processed":
         try:
-            create_distribution_with_retries(output_dataset, copied_files)
+            create_distribution_with_retries(output_dataset, copied_files, content_type)
         except Exception as e:
             s3_service.delete_from_prefix(output_prefix)
             log_exception(e)
@@ -105,19 +109,23 @@ def copy_data(s3_sources, output_prefix):
     return [s3_source.filename for s3_source in s3_sources]
 
 
-def create_distribution_with_retries(output_dataset, copied_files, retries=3):
+def create_distribution_with_retries(
+    output_dataset, copied_files, content_type, retries=3
+):
     try:
-        new_distribution = Distribution(filenames=copied_files)
+        new_distribution = Distribution(
+            filenames=copied_files, content_type=content_type
+        )
         dataset_client.create_distribution(
             output_dataset.id,
             output_dataset.version,
             output_dataset.edition,
-            data=new_distribution.__dict__,
+            data=new_distribution.as_dict(),
         )
     except Exception as e:
         if retries > 0:
             return create_distribution_with_retries(
-                output_dataset, copied_files, retries - 1
+                output_dataset, copied_files, content_type, retries - 1
             )
         else:
             raise e
