@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 from aws_xray_sdk.core import xray_recorder
+from dateutil.tz import UTC, tzutc
 from freezegun.api import freeze_time, FakeDatetime
 from moto import mock_kinesis
 from requests.exceptions import HTTPError
@@ -41,16 +42,26 @@ def test_write_kinesis(mock_uuid, kinesis_writer, mock_dataset_client):
     kinesis_writer.write_kinesis(lambda_event, {})
 
     records_on_destination_stream = get_records_from_stream(destination_stream_name)
+
+    for record in records_on_destination_stream:
+        record["ApproximateArrivalTimestamp"] = record[
+            "ApproximateArrivalTimestamp"
+        ].astimezone(UTC)
+
     expected = [
         {
             "SequenceNumber": "1",
-            "ApproximateArrivalTimestamp": FakeDatetime(2019, 6, 26, 8, 55),
+            "ApproximateArrivalTimestamp": FakeDatetime(
+                2019, 6, 26, 8, 55, tzinfo=tzutc()
+            ),
             "Data": b'{"foo": "bar"}\n',
             "PartitionKey": uuid_str,
         },
         {
             "SequenceNumber": "2",
-            "ApproximateArrivalTimestamp": FakeDatetime(2019, 6, 26, 8, 55),
+            "ApproximateArrivalTimestamp": FakeDatetime(
+                2019, 6, 26, 8, 55, tzinfo=tzutc()
+            ),
             "Data": b'{"foo": "car"}\n',
             "PartitionKey": uuid_str,
         },
