@@ -39,7 +39,7 @@ package:
 functions:
   csv-to-parquet:
     handler: okdata.pipeline.converters.csv.handler.csv_to_parquet
-    memorySize: 3008
+    memorySize: 10240
     timeout: 900
   invoke-lambda:
     handler: okdata.pipeline.lambda_invoker.invoke_lambda
