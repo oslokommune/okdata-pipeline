@@ -1,3 +1,5 @@
+from unittest.mock import ANY, patch
+
 import pandas as pd
 import pytest
 import s3fs
@@ -11,25 +13,23 @@ s3fs.S3FileSystem.cachable = False
 
 
 @mock_s3
-def test_ParquetExporter(event, husholdninger_single):
-    (prefix, file) = husholdninger_single()
+def test_ParquetExporter_chunked(event, husholdninger_single):
+    prefix, file = husholdninger_single()
     event_data = event(prefix, chunksize=2)
     exporter = ParquetExporter(event_data)
-    exporter.export()
-    expected = pd.read_csv(file)
     output_prefix = event_data["payload"]["output_dataset"]["s3_prefix"].replace(
         "%stage%", "intermediate"
     )
+    task = event_data["task"]
 
-    for i in range(4):
-        result = pd.read_parquet(
-            f"s3://{BUCKET}/"
-            + output_prefix
-            + event_data["task"]
-            + f"/husholdninger.part.{i}.parquet.gz"
+    with patch.object(exporter, "_parallel_export") as mocked_parallel_export:
+        exporter.export()
+        mocked_parallel_export.assert_called_once_with(
+            "husholdninger",
+            ANY,
+            None,
+            f"s3://{BUCKET}/{output_prefix}{task}/husholdninger",
         )
-        # result is a subset of expected
-        assert len(result.merge(expected)) == len(result)
 
 
 @mock_s3
@@ -133,7 +133,7 @@ def export_and_read_result(event_data, outputprefix):
 
 
 @mock_s3
-def test_ParquetExporter_valid_dates_not_chunked(event, dates_file):
+def test_ParquetExporter_valid_dates(event, dates_file):
     (prefix, file) = dates_file()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     result = export_and_read_result(event_data, "schema_dates")
@@ -146,22 +146,7 @@ def test_ParquetExporter_valid_dates_not_chunked(event, dates_file):
 
 
 @mock_s3
-def test_ParquetExporter_valid_dates_chunked(event, dates_file):
-    (prefix, file) = dates_file()
-    event_data = event(prefix, chunksize=2, schema=schema_dates)
-    result = export_and_read_result(event_data, "schema_dates")
-    assert result["year_column"][0].year == 1678
-    assert result["year_column"][3].year == 2262
-    assert result["date_column"][0].year == 1678
-    assert result["date_column"][0].month == 10
-    assert result["date_column"][2].year == 1978
-    assert result["date_column"][2].month == 12
-
-
-@mock_s3
-def test_ParquetExporter_invalid_year_too_early_not_chunked(
-    event, dates_file_year_too_early
-):
+def test_ParquetExporter_invalid_year_too_early(event, dates_file_year_too_early):
     (prefix, file) = dates_file_year_too_early()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     exporter = ParquetExporter(event_data)
@@ -171,21 +156,7 @@ def test_ParquetExporter_invalid_year_too_early_not_chunked(
 
 
 @mock_s3
-def test_ParquetExporter_invalid_year_too_early_chunked(
-    event, dates_file_year_too_early
-):
-    (prefix, file) = dates_file_year_too_early()
-    event_data = event(prefix, chunksize=1, schema=schema_dates)
-    exporter = ParquetExporter(event_data)
-    result = exporter.export()
-    assert result["status"] == "CONVERSION_FAILED"
-    assert len(result["errors"]) == 1
-
-
-@mock_s3
-def test_ParquetExporter_invalid_year_too_late_not_chunked(
-    event, dates_file_year_too_late
-):
+def test_ParquetExporter_invalid_year_too_late(event, dates_file_year_too_late):
     (prefix, file) = dates_file_year_too_late()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     exporter = ParquetExporter(event_data)
@@ -195,19 +166,7 @@ def test_ParquetExporter_invalid_year_too_late_not_chunked(
 
 
 @mock_s3
-def test_ParquetExporter_invalid_year_too_late_chunked(event, dates_file_year_too_late):
-    (prefix, file) = dates_file_year_too_late()
-    event_data = event(prefix, chunksize=1, schema=schema_dates)
-    exporter = ParquetExporter(event_data)
-    result = exporter.export()
-    assert result["status"] == "CONVERSION_FAILED"
-    assert len(result["errors"]) == 1
-
-
-@mock_s3
-def test_ParquetExporter_date_with_string_not_chunked(
-    event, dates_file_date_string_value
-):
+def test_ParquetExporter_date_with_string(event, dates_file_date_string_value):
     (prefix, file) = dates_file_date_string_value()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     exporter = ParquetExporter(event_data)
@@ -217,19 +176,7 @@ def test_ParquetExporter_date_with_string_not_chunked(
 
 
 @mock_s3
-def test_ParquetExporter_date_with_string_chunked(event, dates_file_date_string_value):
-    (prefix, file) = dates_file_date_string_value()
-    event_data = event(prefix, chunksize=1, schema=schema_dates)
-    exporter = ParquetExporter(event_data)
-    result = exporter.export()
-    assert result["status"] == "CONVERSION_FAILED"
-    assert len(result["errors"]) == 1
-
-
-@mock_s3
-def test_ParquetExporter_date_wrong_date_time_not_chunked(
-    event, dates_file_date_time_wrong
-):
+def test_ParquetExporter_date_wrong_date_time(event, dates_file_date_time_wrong):
     (prefix, file) = dates_file_date_time_wrong()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     exporter = ParquetExporter(event_data)
@@ -239,7 +186,7 @@ def test_ParquetExporter_date_wrong_date_time_not_chunked(
 
 
 @mock_s3
-def test_ParquetExporter_date_time_not_chunked(event, dates_file_date_time):
+def test_ParquetExporter_date_time(event, dates_file_date_time):
     (prefix, file) = dates_file_date_time()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     result = export_and_read_result(event_data, "schema_dates_date_time")

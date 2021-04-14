@@ -1,10 +1,16 @@
 from dataclasses import asdict
+from multiprocessing import Pipe, Process, connection
 
 from pandas.errors import OutOfBoundsDatetime
 
 from okdata.aws.logging import log_add
 from okdata.pipeline.models import StepData
 from okdata.pipeline.converters.csv.base import BUCKET, Exporter
+
+# The maximum number of processes to run simultaneously when exporting in
+# parallel. Set to match the number of vCPUs available in AWS Lambda, which is
+# 6 as of 2021-04-15.
+MAX_PROCESSES = 6
 
 
 class ParquetExporter(Exporter):
@@ -18,6 +24,43 @@ class ParquetExporter(Exporter):
         )
         return s3_prefix
 
+    @staticmethod
+    def _export(source, schema, out_prefix, part=None, connection=None):
+        df = Exporter.set_date_columns_on_dataframe(source, schema)
+        outfile = "{}.{}parquet.gz".format(out_prefix, f"part.{part}." if part else "")
+        df.to_parquet(
+            outfile,
+            engine="fastparquet",
+            compression="gzip",
+            times="int96",
+        )
+        if connection:
+            connection.send(outfile)
+        return outfile
+
+    def _parallel_export(self, filename, source, schema, out_prefix):
+        # Unfortunately AWS Lambda doesn't support `multiprocessing.Pool`, so
+        # we'll have to take care of the connections ourselves.
+        connections = []
+
+        for i, df in enumerate(source):
+            parent_connection, child_connection = Pipe()
+            connections.append(parent_connection)
+            Process(
+                target=self._export,
+                args=(df, schema, out_prefix, i, child_connection),
+            ).start()
+
+            if len(connections) >= MAX_PROCESSES:
+                for c in connection.wait(connections):
+                    yield c.recv()
+                    connections.remove(c)
+
+        while connections:
+            for c in connection.wait(connections):
+                yield c.recv()
+                connections.remove(c)
+
     def export(self):
         inputs = self.read_csv()
         s3_prefix = self.s3_prefix()
@@ -26,25 +69,13 @@ class ParquetExporter(Exporter):
         errors = []
         try:
             for filename, source in inputs:
-                out_prefix = f"s3://{BUCKET}/" + s3_prefix + filename
-                if self.task_config.chunksize is None:
-                    outfile = f"{out_prefix}.parquet.gz"
-                    outputs.append(outfile)
-                    df = Exporter.set_date_columns_on_dataframe(source, schema)
-                    df.to_parquet(
-                        outfile, engine="fastparquet", compression="gzip", times="int96"
+                out_prefix = f"s3://{BUCKET}/{s3_prefix}{filename}"
+                if self.task_config.chunksize:
+                    outputs.extend(
+                        self._parallel_export(filename, source, schema, out_prefix)
                     )
                 else:
-                    for i, df in enumerate(source):
-                        df = Exporter.set_date_columns_on_dataframe(df, schema)
-                        outfile = f"{out_prefix}.part.{i}.parquet.gz"
-                        outputs.append(outfile)
-                        df.to_parquet(
-                            outfile,
-                            engine="fastparquet",
-                            compression="gzip",
-                            times="int96",
-                        )
+                    outputs.append(self._export(source, schema, out_prefix))
         except OutOfBoundsDatetime as e:
             errors.append({"error": "OutOfBoundsDatetime", "message": str(e)})
         except ValueError as e:
