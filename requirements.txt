@@ -51,7 +51,7 @@ numpy==1.20.1
     #   pandas
 okdata-aws==0.3.2
     # via okdata-pipeline (setup.py)
-okdata-sdk==0.6.2
+okdata-sdk==0.8.0
     # via
     #   okdata-aws
     #   okdata-pipeline (setup.py)
@@ -67,10 +67,8 @@ pyasn1==0.4.8
     #   rsa
 pydantic==1.7.3
     # via okdata-aws
-pyjwt==1.7.1
-    # via
-    #   okdata-pipeline (setup.py)
-    #   okdata-sdk
+pyjwt==2.1.0
+    # via okdata-sdk
 pyrsistent==0.17.3
     # via jsonschema
 python-dateutil==2.8.1
