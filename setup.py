@@ -24,8 +24,8 @@ setuptools.setup(
         "boto3",
         "fastparquet",
         "jsonschema",
-        "okdata-aws>=0.3.1",
-        "okdata-sdk>=0.6.1",
+        "okdata-aws>=0.3.2",
+        "okdata-sdk>=0.8.0",
         "pandas",
         "python-dateutil",
         "requests",
@@ -34,7 +34,5 @@ setuptools.setup(
         "s3fs<=0.4.2",
         # Newer versions drop support for newer Excel files (.xlsx)
         "xlrd<2.0",
-        # Temporary fix; should be required through the SDK itself.
-        "PyJWT<2.0",
     ],
 )

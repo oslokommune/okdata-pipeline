@@ -6,11 +6,11 @@
 #
 attrs==20.3.0
     # via jsonschema
-aws-xray-sdk==2.6.0
+aws-xray-sdk==2.8.0
     # via okdata-pipeline (setup.py)
-boto3==1.17.8
+boto3==1.17.67
     # via okdata-pipeline (setup.py)
-botocore==1.20.8
+botocore==1.20.67
     # via
     #   aws-xray-sdk
     #   boto3
@@ -24,7 +24,7 @@ ecdsa==0.14.1
     # via python-jose
 fastparquet==0.5.0
     # via okdata-pipeline (setup.py)
-fsspec==0.8.5
+fsspec==2021.4.0
     # via s3fs
 future==0.18.2
     # via aws-xray-sdk
@@ -34,43 +34,39 @@ jmespath==0.10.0
     # via
     #   boto3
     #   botocore
-jsonpickle==2.0.0
-    # via aws-xray-sdk
 jsonschema==3.2.0
     # via
     #   okdata-pipeline (setup.py)
     #   okdata-sdk
-llvmlite==0.35.0
+llvmlite==0.36.0
     # via numba
-numba==0.52.0
+numba==0.53.1
     # via fastparquet
-numpy==1.20.1
+numpy==1.20.2
     # via
     #   fastparquet
     #   numba
     #   pandas
 okdata-aws==0.3.2
     # via okdata-pipeline (setup.py)
-okdata-sdk==0.6.2
+okdata-sdk==0.8.0
     # via
     #   okdata-aws
     #   okdata-pipeline (setup.py)
-pandas==1.2.2
+pandas==1.2.4
     # via
     #   fastparquet
     #   okdata-pipeline (setup.py)
-prettytable==2.0.0
+prettytable==2.1.0
     # via okdata-sdk
 pyasn1==0.4.8
     # via
     #   python-jose
     #   rsa
-pydantic==1.7.3
+pydantic==1.8.1
     # via okdata-aws
-pyjwt==1.7.1
-    # via
-    #   okdata-pipeline (setup.py)
-    #   okdata-sdk
+pyjwt==2.1.0
+    # via okdata-sdk
 pyrsistent==0.17.3
     # via jsonschema
 python-dateutil==2.8.1
@@ -89,23 +85,25 @@ requests==2.25.1
     #   okdata-pipeline (setup.py)
     #   okdata-sdk
     #   python-keycloak
-rsa==4.7.1
+rsa==4.7.2
     # via python-jose
 s3fs==0.4.2
     # via okdata-pipeline (setup.py)
-s3transfer==0.3.4
+s3transfer==0.4.2
     # via boto3
-six==1.15.0
+six==1.16.0
     # via
     #   ecdsa
     #   jsonschema
     #   python-dateutil
     #   python-jose
     #   thrift
-structlog==20.2.0
+structlog==21.1.0
     # via okdata-aws
 thrift==0.13.0
     # via fastparquet
+typing-extensions==3.10.0.0
+    # via pydantic
 urllib3==1.26.4
     # via
     #   botocore
