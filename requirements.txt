@@ -4,7 +4,7 @@
 #
 #    pip-compile
 #
-attrs==20.3.0
+attrs==21.1.0
     # via jsonschema
 aws-xray-sdk==2.8.0
     # via okdata-pipeline (setup.py)
@@ -49,7 +49,7 @@ numpy==1.20.2
     #   pandas
 okdata-aws==0.3.2
     # via okdata-pipeline (setup.py)
-okdata-sdk==0.8.0
+okdata-sdk==0.8.1
     # via
     #   okdata-aws
     #   okdata-pipeline (setup.py)
