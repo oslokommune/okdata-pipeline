@@ -25,7 +25,7 @@ setuptools.setup(
         "fastparquet",
         "jsonschema",
         "okdata-aws>=0.3.2",
-        "okdata-sdk>=0.8.0",
+        "okdata-sdk>=0.8.1",
         "pandas",
         "python-dateutil",
         "requests",
