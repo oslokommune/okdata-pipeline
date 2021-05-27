@@ -71,8 +71,6 @@ def event():
 @pytest.fixture()
 def s3_mock():
     with mock_s3():
-        import boto3
-
         yield boto3.client("s3")
 
 
