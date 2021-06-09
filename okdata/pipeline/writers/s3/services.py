@@ -31,7 +31,7 @@ class S3Service:
 
         if len(failed_s3_sources) > 0:
             if retries > 0:
-                return self.copy(failed_s3_sources, output_prefix, retries - 1)
+                self.copy(failed_s3_sources, output_prefix, retries - 1)
             else:
                 raise IncompleteTransaction
 

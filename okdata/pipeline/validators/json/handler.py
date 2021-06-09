@@ -75,6 +75,7 @@ def resolve_input_data(step_data: StepData):
         return step_data.input_events
     elif step_data.s3_input_prefixes:
         return read_s3_data(step_data.s3_input_prefixes)
+    return None
 
 
 def read_s3_data(s3_input_prefix):

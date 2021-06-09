@@ -51,6 +51,7 @@ class StepData:
             return len(self.s3_input_prefixes.items())
         if self.input_events:
             return len(self.input_events)
+        return 0
 
 
 @dataclass(frozen=True)
