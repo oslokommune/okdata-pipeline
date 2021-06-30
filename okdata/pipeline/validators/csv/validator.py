@@ -8,10 +8,13 @@ import boto3
 from aws_xray_sdk.core import patch_all, xray_recorder
 
 from okdata.aws.logging import log_add, logging_wrapper
+from okdata.aws.status import status_wrapper, status_add
+
 from okdata.pipeline.models import Config
 from okdata.pipeline.validators.csv import string_reader
 from okdata.pipeline.validators.csv.parser import ParseErrors, parse_csv
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
+
 
 patch_all()
 
@@ -42,15 +45,21 @@ class StepConfig:
     def from_task_config(cls, event):
         return cls(**event)
 
-
+@status_wrapper
 @logging_wrapper
 @xray_recorder.capture("validate_csv")
 def validate_csv(event, context):
     config = Config.from_lambda_event(event)
-
+    output_dataset = config.payload.output_dataset
     step_config = StepConfig.from_task_config(config.task_config)
 
     s3_prefix = config.payload.output_dataset.s3_prefix
+
+    status_add(
+        domain="dataset",
+        domain_id=f"{output_dataset.id}/{output_dataset.version}",
+        operation=config.task,
+    )
 
     log_add(
         header_row=step_config.header_row,
@@ -86,6 +95,9 @@ def validate_csv(event, context):
         header = next(reader)
     try:
         csv_data = parse_csv(reader, step_config.schema, header)
+        if not csv_data:
+            status_add(errors=[{"message": {"nb": "Tom fil.", "en": "Empty file."}}])
+
     except ParseErrors as p:
         return _with_error(config, p.errors)
 
