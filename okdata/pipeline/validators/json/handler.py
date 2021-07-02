@@ -3,10 +3,11 @@ from dataclasses import asdict, dataclass
 from aws_xray_sdk.core import patch_all, xray_recorder
 
 from okdata.aws.logging import log_add, logging_wrapper
+from okdata.aws.status import status_wrapper, status_add
 from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.models import Config, StepData
-from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 from okdata.pipeline.validators.json.s3_reader import read_s3_data
+from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
 patch_all()
 
@@ -23,6 +24,7 @@ class StepConfig:
             return StepConfig()
 
 
+@status_wrapper
 @logging_wrapper
 @xray_recorder.capture("validate_json")
 def validate_json(event, context):
@@ -30,10 +32,18 @@ def validate_json(event, context):
     step_config = StepConfig.from_dict(config.task_config)
     step_data = config.payload.step_data
 
+    output_dataset = config.payload.output_dataset
+
     log_add(
-        dataset_id=config.payload.output_dataset.id,
-        version=config.payload.output_dataset.version,
-        edition=config.payload.output_dataset.edition,
+        dataset_id=output_dataset.id,
+        version=output_dataset.version,
+        edition=output_dataset.edition,
+    )
+
+    status_add(
+        domain="dataset",
+        domain_id=f"{output_dataset.id}/{output_dataset.version}",
+        operation=config.task,
     )
 
     if step_data.s3_input_prefixes and step_data.input_count > 1:
@@ -58,6 +68,18 @@ def validate_json(event, context):
     )
 
     if validation_errors:
+        status_add(
+            errors=[
+                {
+                    "message": {
+                        "nb": "Opplastet JSON er ugyldig.",
+                        "en": "Uploaded JSON is invalid.",
+                    },
+                    "errors": validation_errors[:100],
+                }
+            ]
+        )
+
         return asdict(
             StepData(
                 input_events=step_data.input_events,

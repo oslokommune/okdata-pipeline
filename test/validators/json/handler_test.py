@@ -6,19 +6,23 @@ from unittest.mock import ANY
 
 import pytest
 
+from okdata.aws.status.sdk import Status
 from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.models import StepData
 from okdata.pipeline.validators.json.handler import validate_json
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
 test_data_directory = Path(os.path.dirname(__file__), "data")
-input_events = [{"foo": "bar"}]
 schema = json.loads((test_data_directory / "schema.json").read_text())
-validation_errors = [{"index": 0, "message": "some message"}]
+input_events = [{"id": "123", "year": "2021", "datetime": "bar"}]
+validation_errors = [
+    {"message": "'date' is a required property", "row": "root"},
+    {"message": "'bar' is not a 'date-time'", "row": "datetime"},
+]
 task_name = "json_validator"
 
 
-def test_validation_success(validation_success, lambda_event):
+def test_validation_success(validation_success, mock_status_requests, lambda_event):
     result = validate_json(lambda_event, {})
     JsonSchemaValidator.validate_list.assert_called_once_with(
         self=ANY, data=input_events
@@ -32,7 +36,9 @@ def test_validation_success(validation_success, lambda_event):
     )
 
 
-def test_validation_failed(validation_failure, lambda_event):
+def test_validation_failed(
+    validation_spy, status_add_spy, mock_status_requests, lambda_event
+):
     result = validate_json(lambda_event, {})
     JsonSchemaValidator.validate_list.assert_called_once_with(
         self=ANY, data=input_events
@@ -44,9 +50,23 @@ def test_validation_failed(validation_failure, lambda_event):
             errors=validation_errors,
         )
     )
+    assert status_add_spy.call_count == 2
+    assert status_add_spy.call_args == (
+        {
+            "errors": [
+                {
+                    "message": {
+                        "nb": "Opplastet JSON er ugyldig.",
+                        "en": "Uploaded JSON is invalid.",
+                    },
+                    "errors": validation_errors,
+                }
+            ]
+        },
+    )
 
 
-def test_no_schema_succeeds(lambda_event):
+def test_no_schema_succeeds(lambda_event, mock_status_requests):
     lambda_event_no_schema = lambda_event
     lambda_event_no_schema["payload"]["pipeline"]["task_config"][task_name] = None
     result = validate_json(lambda_event_no_schema, {})
@@ -59,7 +79,7 @@ def test_no_schema_succeeds(lambda_event):
     )
 
 
-def test_s3_input(lambda_event, spy_read_s3_data):
+def test_s3_input(lambda_event, spy_read_s3_data, mock_status_requests):
     lambda_event_s3 = lambda_event
     lambda_event_s3["payload"]["step_data"]["input_events"] = None
     lambda_event_s3["payload"]["step_data"]["s3_input_prefixes"] = {"foo": "bar"}
@@ -100,7 +120,7 @@ def test_illegal_input_count_s3(lambda_event):
         validate_json(lambda_event_illegal_input_count_s3, {})
 
 
-def test_no_task_config_succeeds(lambda_event):
+def test_no_task_config_succeeds(lambda_event, mock_status_requests):
     lambda_event_no_task_config = lambda_event
     lambda_event_no_task_config["payload"]["pipeline"]["task_config"] = None
     result = validate_json(lambda_event_no_task_config, {})
@@ -123,11 +143,7 @@ def validation_success(monkeypatch, mocker):
 
 
 @pytest.fixture
-def validation_failure(monkeypatch, mocker):
-    def validate_list(self, data):
-        return validation_errors
-
-    monkeypatch.setattr(JsonSchemaValidator, "validate_list", validate_list)
+def validation_spy(monkeypatch, mocker):
     mocker.spy(JsonSchemaValidator, "validate_list")
 
 
@@ -160,3 +176,19 @@ def lambda_event():
             },
         },
     }
+
+
+# Stop HTTP call to status API
+@pytest.fixture
+def mock_status_requests(monkeypatch):
+    def _process_payload(self):
+        return
+
+    monkeypatch.setattr(Status, "_process_payload", _process_payload)
+
+
+@pytest.fixture
+def status_add_spy(monkeypatch, mocker):
+    import okdata.pipeline.validators.json.handler
+
+    return mocker.spy(okdata.pipeline.validators.json.handler, "status_add")
