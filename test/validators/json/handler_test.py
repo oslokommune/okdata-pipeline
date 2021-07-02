@@ -1,6 +1,5 @@
 import json
 import os
-from copy import deepcopy
 from dataclasses import asdict
 from pathlib import Path
 from unittest.mock import ANY
@@ -18,21 +17,8 @@ schema = json.loads((test_data_directory / "schema.json").read_text())
 validation_errors = [{"index": 0, "message": "some message"}]
 task_name = "json_validator"
 
-lambda_event = {
-    "execution_name": "test_execution",
-    "task": task_name,
-    "payload": {
-        "pipeline": {
-            "id": "some-id",
-            "task_config": {task_name: {"schema": schema}},
-        },
-        "output_dataset": {"id": "some-dataset", "version": "some-version"},
-        "step_data": {"input_events": input_events, "status": "PENDING", "errors": []},
-    },
-}
 
-
-def test_validation_success(validation_success):
+def test_validation_success(validation_success, lambda_event):
     result = validate_json(lambda_event, {})
     JsonSchemaValidator.validate_list.assert_called_once_with(
         self=ANY, data=input_events
@@ -46,7 +32,7 @@ def test_validation_success(validation_success):
     )
 
 
-def test_validation_failed(validation_failure):
+def test_validation_failed(validation_failure, lambda_event):
     result = validate_json(lambda_event, {})
     JsonSchemaValidator.validate_list.assert_called_once_with(
         self=ANY, data=input_events
@@ -60,8 +46,8 @@ def test_validation_failed(validation_failure):
     )
 
 
-def test_no_schema_succeeds():
-    lambda_event_no_schema = deepcopy(lambda_event)
+def test_no_schema_succeeds(lambda_event):
+    lambda_event_no_schema = lambda_event
     lambda_event_no_schema["payload"]["pipeline"]["task_config"][task_name] = None
     result = validate_json(lambda_event_no_schema, {})
     assert result == asdict(
@@ -73,8 +59,8 @@ def test_no_schema_succeeds():
     )
 
 
-def test_s3_input(spy_read_s3_data):
-    lambda_event_s3 = deepcopy(lambda_event)
+def test_s3_input(lambda_event, spy_read_s3_data):
+    lambda_event_s3 = lambda_event
     lambda_event_s3["payload"]["step_data"]["input_events"] = None
     lambda_event_s3["payload"]["step_data"]["s3_input_prefixes"] = {"foo": "bar"}
 
@@ -82,12 +68,12 @@ def test_s3_input(spy_read_s3_data):
     assert spy_read_s3_data.call_count == 1
 
 
-def test_handle_multiple_realtime_events(validation_success):
+def test_handle_multiple_realtime_events(lambda_event, validation_success):
     events = [
         {"foo": "bar"},
         {"bar": "foo"},
     ]
-    multiple_realtime_events = deepcopy(lambda_event)
+    multiple_realtime_events = lambda_event
     multiple_realtime_events["payload"]["step_data"]["input_events"] = events
 
     result = validate_json(multiple_realtime_events, {})
@@ -102,8 +88,8 @@ def test_handle_multiple_realtime_events(validation_success):
     )
 
 
-def test_illegal_input_count_s3():
-    lambda_event_illegal_input_count_s3 = deepcopy(lambda_event)
+def test_illegal_input_count_s3(lambda_event):
+    lambda_event_illegal_input_count_s3 = lambda_event
     lambda_event_illegal_input_count_s3["payload"]["step_data"]["input_events"] = None
     lambda_event_illegal_input_count_s3["payload"]["step_data"]["s3_input_prefixes"] = {
         "foo": "bar",
@@ -114,8 +100,8 @@ def test_illegal_input_count_s3():
         validate_json(lambda_event_illegal_input_count_s3, {})
 
 
-def test_no_task_config_succeeds():
-    lambda_event_no_task_config = deepcopy(lambda_event)
+def test_no_task_config_succeeds(lambda_event):
+    lambda_event_no_task_config = lambda_event
     lambda_event_no_task_config["payload"]["pipeline"]["task_config"] = None
     result = validate_json(lambda_event_no_task_config, {})
     assert result == asdict(
@@ -154,3 +140,23 @@ def spy_read_s3_data(monkeypatch, mocker):
 
     monkeypatch.setattr(json_handler, "read_s3_data", read_s3_data)
     return mocker.spy(json_handler, "read_s3_data")
+
+
+@pytest.fixture
+def lambda_event():
+    return {
+        "execution_name": "test_execution",
+        "task": task_name,
+        "payload": {
+            "pipeline": {
+                "id": "some-id",
+                "task_config": {task_name: {"schema": schema}},
+            },
+            "output_dataset": {"id": "some-dataset", "version": "some-version"},
+            "step_data": {
+                "input_events": input_events,
+                "status": "PENDING",
+                "errors": [],
+            },
+        },
+    }
