@@ -61,12 +61,13 @@ class JsonSchemaValidator:
         log_add(raw_errors=raw_errors)
         errors = []
         for e in raw_errors:
-            row = e.path[0]
-            if len(e.path) > 1:
-                col = e.path[1]
-                errors.append({"row": row, "column": col, "message": e.message})
-            else:
-                errors.append({"row": row, "message": e.message})
+            error = {"message": e.message, "row": "root"}
+            path_len = len(e.path)
+            if path_len > 0:
+                error["row"] = e.path[0]
+                if path_len > 1:
+                    error["col"] = e.path[1]
+            errors.append(error)
 
         return errors
 

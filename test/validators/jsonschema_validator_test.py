@@ -138,3 +138,14 @@ class TestValidJsonSchema:
         ]
         validation_errors = JsonSchemaValidator(json_schema).validate_list(json_data)
         assert len(validation_errors) == 1
+
+    def test_validate_list_missing_datetime_column(self, json_schema):
+        json_data = [
+            {
+                "id": "1",
+                "year": "2020",
+                "date": "2020-01-01",
+            }
+        ]
+        validation_errors = JsonSchemaValidator(json_schema).validate_list(json_data)
+        assert len(validation_errors) == 1
