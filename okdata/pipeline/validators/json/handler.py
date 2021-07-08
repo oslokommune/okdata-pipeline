@@ -5,6 +5,7 @@ from aws_xray_sdk.core import patch_all, xray_recorder
 from okdata.aws.logging import log_add, logging_wrapper
 from okdata.pipeline.models import Config, StepData
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
+from okdata.pipeline.validators.json.s3_reader import read_s3_data
 
 patch_all()
 
@@ -76,7 +77,3 @@ def resolve_input_data(step_data: StepData):
     elif step_data.s3_input_prefixes:
         return read_s3_data(step_data.s3_input_prefixes)
     return None
-
-
-def read_s3_data(s3_input_prefix):
-    raise NotImplementedError

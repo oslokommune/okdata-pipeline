@@ -72,13 +72,13 @@ def test_no_schema_succeeds():
     )
 
 
-def test_s3_input():
+def test_s3_input(spy_read_s3_data):
     lambda_event_s3 = deepcopy(lambda_event)
     lambda_event_s3["payload"]["step_data"]["input_events"] = None
     lambda_event_s3["payload"]["step_data"]["s3_input_prefixes"] = {"foo": "bar"}
 
-    with pytest.raises(NotImplementedError):
-        validate_json(lambda_event_s3, {})
+    validate_json(lambda_event_s3, {})
+    assert spy_read_s3_data.call_count == 1
 
 
 def test_no_task_config_succeeds():
@@ -110,3 +110,14 @@ def validation_failure(monkeypatch, mocker):
 
     monkeypatch.setattr(JsonSchemaValidator, "validate_list", validate_list)
     mocker.spy(JsonSchemaValidator, "validate_list")
+
+
+@pytest.fixture
+def spy_read_s3_data(monkeypatch, mocker):
+    import okdata.pipeline.validators.json.handler as json_handler
+
+    def read_s3_data(s3_input_prefix):
+        return ""
+
+    monkeypatch.setattr(json_handler, "read_s3_data", read_s3_data)
+    return mocker.spy(json_handler, "read_s3_data")
