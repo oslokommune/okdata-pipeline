@@ -108,7 +108,7 @@ def test_handle_multiple_realtime_events(lambda_event, validation_success):
     )
 
 
-def test_illegal_input_count_s3(lambda_event):
+def test_illegal_input_count_s3(lambda_event, mock_status_requests):
     lambda_event_illegal_input_count_s3 = lambda_event
     lambda_event_illegal_input_count_s3["payload"]["step_data"]["input_events"] = None
     lambda_event_illegal_input_count_s3["payload"]["step_data"]["s3_input_prefixes"] = {
