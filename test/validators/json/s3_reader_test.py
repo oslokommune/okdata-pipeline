@@ -1,5 +1,5 @@
-import boto3
 from moto import mock_s3
+import boto3
 import pytest
 
 import okdata.pipeline.validators.json.s3_reader as s3_reader
