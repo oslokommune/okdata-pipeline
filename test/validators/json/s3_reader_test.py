@@ -15,4 +15,4 @@ def test_s3_reader_read_s3_data(mocker):
 
     mocker.patch("okdata.pipeline.validators.json.s3_reader.BUCKET", test_bucket)
     mocker.patch("okdata.pipeline.validators.json.s3_reader.s3", s3_client_mock)
-    assert s3_reader.read_s3_data({"the-dataset-id": test_prefix}) == "asdfasdf"
+    assert s3_reader.read_s3_data({"the-dataset-id": test_prefix}) == ["asdfasdf"]
