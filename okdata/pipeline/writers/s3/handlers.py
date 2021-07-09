@@ -7,9 +7,9 @@ from aws_xray_sdk.core import patch_all, xray_recorder
 from okdata.aws.logging import log_add, log_exception, logging_wrapper
 from okdata.aws.status import status_add, status_wrapper
 from okdata.pipeline.models import Config, StepData
+from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.writers.s3.exceptions import (
     DistributionNotCreated,
-    IllegalWrite,
     IncompleteTransaction,
 )
 from okdata.pipeline.writers.s3.models import Distribution, TaskConfig

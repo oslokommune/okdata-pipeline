@@ -3,6 +3,7 @@ from dataclasses import asdict, dataclass
 from aws_xray_sdk.core import patch_all, xray_recorder
 
 from okdata.aws.logging import log_add, logging_wrapper
+from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.models import Config, StepData
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 from okdata.pipeline.validators.json.s3_reader import read_s3_data
@@ -34,6 +35,9 @@ def validate_json(event, context):
         version=config.payload.output_dataset.version,
         edition=config.payload.output_dataset.edition,
     )
+
+    if step_data.input_count > 1:
+        raise IllegalWrite("cannot combine multiple datasets: ", step_data.input_count)
 
     if step_config.schema is None:
         return asdict(
