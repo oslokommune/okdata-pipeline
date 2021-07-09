@@ -1,11 +1,10 @@
-import boto3
 import pytest
 from botocore.stub import Stubber
-from moto import mock_s3
 
 import test.writers.s3.test_data as test_data
 from okdata.pipeline.writers.s3.exceptions import IncompleteTransaction
 from okdata.pipeline.writers.s3.services import S3Service
+from test.util import mock_aws_s3_client
 
 file_content_1 = "nfjanfdafmkadmfa"
 file_content_2 = "djnfjandjfnsekjg"
@@ -61,34 +60,25 @@ def test_list_objects(mock_aws):
     assert len(s3_objects) == len(test_files)
 
 
-def test_list_more_than_1000_objects(list_objects_is_truncated):
+def test_list_more_than_1000_objects():
+    s3_client = mock_aws_s3_client(S3Service.bucket)
+    for i in range(1100):
+        s3_client.put_object(
+            Bucket=S3Service.bucket,
+            Key=f"{test_data.s3_input_prefix}filename{i}",
+            Body="blablabla".encode("utf-8"),
+        )
+
     s3_objects = S3Service().list_objects_contents(test_data.s3_input_prefix)
     assert len(s3_objects) == 1100
 
 
 @pytest.fixture
 def mock_aws():
-    mock_s3().start()
-    # Must set region_name="us-east-1" in order for moto to create bucket.
-    # Moto throws IllegalLocationConstraintException otherwise. Oyvind Nygard 2020-09-28
-    s3_client = boto3.client("s3", region_name="us-east-1")
-    s3_client.create_bucket(Bucket=S3Service.bucket)
+    s3_client = mock_aws_s3_client(S3Service.bucket)
     for test_file in test_files:
         s3_client.put_object(
             Bucket=S3Service.bucket,
             Key=f"{test_data.s3_input_prefix}{test_file['filename']}",
             Body=test_file["content"],
-        )
-
-
-@pytest.fixture
-def list_objects_is_truncated():
-    mock_s3().start()
-    s3_client = boto3.client("s3", region_name="us-east-1")
-    s3_client.create_bucket(Bucket=S3Service.bucket)
-    for i in range(1100):
-        s3_client.put_object(
-            Bucket=S3Service.bucket,
-            Key=f"{test_data.s3_input_prefix}filename{i}",
-            Body="blablabla".encode("utf-8"),
         )

@@ -7,6 +7,7 @@ from unittest.mock import ANY
 
 import pytest
 
+from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.models import StepData
 from okdata.pipeline.validators.json.handler import validate_json
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
@@ -72,13 +73,36 @@ def test_no_schema_succeeds():
     )
 
 
-def test_s3_input():
+def test_s3_input(spy_read_s3_data):
     lambda_event_s3 = deepcopy(lambda_event)
     lambda_event_s3["payload"]["step_data"]["input_events"] = None
     lambda_event_s3["payload"]["step_data"]["s3_input_prefixes"] = {"foo": "bar"}
 
-    with pytest.raises(NotImplementedError):
-        validate_json(lambda_event_s3, {})
+    validate_json(lambda_event_s3, {})
+    assert spy_read_s3_data.call_count == 1
+
+
+def test_illegal_input_count():
+    lambda_event_illegal_input_count = deepcopy(lambda_event)
+    lambda_event_illegal_input_count["payload"]["step_data"]["input_events"] = [
+        {"foo": "bar"},
+        {"bar": "foo"},
+    ]
+
+    with pytest.raises(IllegalWrite):
+        validate_json(lambda_event_illegal_input_count, {})
+
+
+def test_illegal_input_count_s3():
+    lambda_event_illegal_input_count_s3 = deepcopy(lambda_event)
+    lambda_event_illegal_input_count_s3["payload"]["step_data"]["input_events"] = None
+    lambda_event_illegal_input_count_s3["payload"]["step_data"]["s3_input_prefixes"] = {
+        "foo": "bar",
+        "bar": "foo",
+    }
+
+    with pytest.raises(IllegalWrite):
+        validate_json(lambda_event_illegal_input_count_s3, {})
 
 
 def test_no_task_config_succeeds():
@@ -110,3 +134,14 @@ def validation_failure(monkeypatch, mocker):
 
     monkeypatch.setattr(JsonSchemaValidator, "validate_list", validate_list)
     mocker.spy(JsonSchemaValidator, "validate_list")
+
+
+@pytest.fixture
+def spy_read_s3_data(monkeypatch, mocker):
+    import okdata.pipeline.validators.json.handler as json_handler
+
+    def read_s3_data(s3_input_prefix):
+        return ""
+
+    monkeypatch.setattr(json_handler, "read_s3_data", read_s3_data)
+    return mocker.spy(json_handler, "read_s3_data")

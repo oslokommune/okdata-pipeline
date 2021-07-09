@@ -9,11 +9,11 @@ import test.writers.s3.test_data as test_data
 from okdata.aws.status.sdk import Status
 
 
+from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.models import StepData
 from okdata.pipeline.writers.s3 import handlers
 from okdata.pipeline.writers.s3.exceptions import (
     DistributionNotCreated,
-    IllegalWrite,
     IncompleteTransaction,
 )
 from okdata.pipeline.writers.s3.services import S3Service
