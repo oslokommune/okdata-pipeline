@@ -1,3 +1,4 @@
+import json
 import os
 
 import boto3
@@ -13,4 +14,4 @@ def read_s3_data(s3_input_prefixes: dict) -> list:
     s3_path = next(iter(objects["Contents"]))["Key"]
 
     response = s3.get_object(Bucket=BUCKET, Key=s3_path)
-    return [response["Body"].read().decode("utf-8")]
+    return [json.loads(response["Body"].read().decode("utf-8"))]
