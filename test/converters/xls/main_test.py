@@ -1,11 +1,8 @@
 import os
 import sys
 
-import boto3
-import pytest
-from moto import mock_s3
-
 from okdata.pipeline.converters.xls.main import xls_to_csv
+from test.util import mock_aws_s3_client
 
 CWD = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(CWD, ".."))
@@ -64,7 +61,9 @@ expected_content = "A;B\n" + "1;foo\n" + "2;bar\n" + "3;baz\n"
 
 
 class MainTest:
-    def test_xls_to_csv(self, s3_mock):
+    def test_xls_to_csv():
+        s3_mock = mock_aws_s3_client(bucket)
+
         excel_path = os.path.join(CWD, "data", "simple.xlsx")
         upload_key = "raw/green/dataset-in/1/20181115/simple.xlsx"
         output_prefix = "intermediate/yellow/dataset-out/1/20200123/xls2csv/"
@@ -85,7 +84,9 @@ class MainTest:
 
         assert content == expected_content
 
-    def test_xls_to_csv_multiple_files(self, s3_mock):
+    def test_xls_to_csv_multiple_files():
+        s3_mock = mock_aws_s3_client(bucket)
+
         excel_path = os.path.join(CWD, "data", "simple.xlsx")
         upload_prefix = "raw/green/dataset-in/1/20181115/"
         output_prefix = "intermediate/yellow/dataset-out/1/20200123/xls2csv/"
@@ -106,7 +107,9 @@ class MainTest:
 
             assert content == expected_content
 
-    def test_xls_to_csv_default_config(self, s3_mock):
+    def test_xls_to_csv_default_config():
+        s3_mock = mock_aws_s3_client(bucket)
+
         excel_path = os.path.join(CWD, "data", "simple.xlsx")
         upload_key = "raw/green/dataset-in/1/20181115/simple.xlsx"
         output_prefix = "intermediate/yellow/dataset-out/1/20200123/xls2csv/"
@@ -126,14 +129,3 @@ class MainTest:
         content = content.replace("\r", "")
 
         assert content == expected_content
-
-
-@pytest.fixture()
-def s3_mock():
-    mock_s3().start()
-    boto3.DEFAULT_SESSION = None
-    s3 = boto3.resource("s3", region_name="eu-west-1")
-    s3.create_bucket(
-        Bucket=bucket, CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
-    )
-    return s3
