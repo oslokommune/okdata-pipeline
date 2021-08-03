@@ -48,7 +48,7 @@ class ParquetExporter(Exporter):
             connections.append(parent_connection)
             Process(
                 target=self._export,
-                args=(df, schema, out_prefix, i, child_connection),
+                args=(df, schema, out_prefix, i + 1, child_connection),
             ).start()
 
             if len(connections) >= MAX_PROCESSES:
