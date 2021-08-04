@@ -138,6 +138,32 @@ event_with_null_task_config_child = {
     "task_config": {"some_config": "some value"},
 }
 
+event_merge_task_config = {
+    "execution_name": "test_execution",
+    "task": "kinesis_writer",
+    "payload": {
+        "pipeline": {
+            "id": "some-id",
+            "task_config": {
+                "kinesis_writer": {
+                    "some_config": "overridden value",
+                    "some_new_config": "some other value",
+                }
+            },
+        },
+        "output_dataset": {"id": "some-id", "version": "1"},
+        "step_data": {
+            "input_events": [{"foo": "bar"}],
+            "status": "PENDING",
+            "errors": [],
+        },
+    },
+    "task_config": {
+        "some_config": "some value",
+        "some_unchanged_config": "unchanged value",
+    },
+}
+
 
 def test_config_types():
     config = Config.from_lambda_event(event_pipeline_lambda_event)
@@ -261,3 +287,11 @@ def test_handle_null_task_config_child():
     config = Config.from_lambda_event(event_with_null_task_config_child)
 
     assert config.task_config["some_config"] == "some value"
+
+
+def test_merging_task_config():
+    config = Config.from_lambda_event(event_merge_task_config)
+
+    assert config.task_config["some_config"] == "overridden value"
+    assert config.task_config["some_new_config"] == "some other value"
+    assert config.task_config["some_unchanged_config"] == "unchanged value"
