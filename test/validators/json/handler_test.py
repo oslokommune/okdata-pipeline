@@ -13,7 +13,7 @@ from okdata.pipeline.validators.json.handler import validate_json
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
 test_data_directory = Path(os.path.dirname(__file__), "data")
-input_events = [{"foo", "bar"}]
+input_events = [{"foo": "bar"}]
 schema = json.loads((test_data_directory / "schema.json").read_text())
 validation_errors = [{"index": 0, "message": "some message"}]
 task_name = "json_validator"
@@ -82,15 +82,24 @@ def test_s3_input(spy_read_s3_data):
     assert spy_read_s3_data.call_count == 1
 
 
-def test_illegal_input_count():
-    lambda_event_illegal_input_count = deepcopy(lambda_event)
-    lambda_event_illegal_input_count["payload"]["step_data"]["input_events"] = [
+def test_handle_multiple_realtime_events(validation_success):
+    events = [
         {"foo": "bar"},
         {"bar": "foo"},
     ]
+    multiple_realtime_events = deepcopy(lambda_event)
+    multiple_realtime_events["payload"]["step_data"]["input_events"] = events
 
-    with pytest.raises(IllegalWrite):
-        validate_json(lambda_event_illegal_input_count, {})
+    result = validate_json(multiple_realtime_events, {})
+
+    JsonSchemaValidator.validate_list.assert_called_once_with(self=ANY, data=events)
+    assert result == asdict(
+        StepData(
+            input_events=events,
+            status="VALIDATION_SUCCESS",
+            errors=[],
+        )
+    )
 
 
 def test_illegal_input_count_s3():

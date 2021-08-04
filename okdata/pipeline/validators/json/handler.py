@@ -36,8 +36,10 @@ def validate_json(event, context):
         edition=config.payload.output_dataset.edition,
     )
 
-    if step_data.input_count > 1:
-        raise IllegalWrite("cannot combine multiple datasets: ", step_data.input_count)
+    if step_data.s3_input_prefixes and step_data.input_count > 1:
+        raise IllegalWrite(
+            "cannot combine multiple S3 datasets: ", step_data.input_count
+        )
 
     if step_config.schema is None:
         return asdict(
