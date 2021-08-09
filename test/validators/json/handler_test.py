@@ -88,7 +88,9 @@ def test_s3_input(lambda_event, spy_read_s3_data, mock_status_requests):
     assert spy_read_s3_data.call_count == 1
 
 
-def test_handle_multiple_realtime_events(lambda_event, validation_success):
+def test_handle_multiple_realtime_events(
+    lambda_event, validation_success, mock_status_requests
+):
     events = [
         {"foo": "bar"},
         {"bar": "foo"},
