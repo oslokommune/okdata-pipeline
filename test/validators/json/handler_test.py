@@ -9,16 +9,22 @@ import pytest
 from okdata.aws.status.sdk import Status
 from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.models import StepData
-from okdata.pipeline.validators.json.handler import validate_json
+from okdata.pipeline.validators.json.handler import validate_json, format_errors_message
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
 test_data_directory = Path(os.path.dirname(__file__), "data")
-schema = json.loads((test_data_directory / "schema.json").read_text())
+schema_for_object = json.loads((test_data_directory / "schema.json").read_text())
+schema_for_array = json.loads((test_data_directory / "schema_array.json").read_text())
 input_events = [{"id": "123", "year": "2021", "datetime": "bar"}]
 validation_errors = [
     {"message": "'date' is a required property", "row": "root"},
     {"message": "'bar' is not a 'date-time'", "row": "datetime"},
 ]
+validation_errors_for_array = [
+    {"message": "'name' is a required property", "row": 0},
+    {"message": "'created' is a required property", "row": 0},
+]
+
 task_name = "json_validator"
 
 
@@ -55,11 +61,40 @@ def test_validation_failed(
         {
             "errors": [
                 {
-                    "message": {
-                        "nb": "Opplastet JSON er ugyldig.",
-                        "en": "Uploaded JSON is invalid.",
-                    },
-                    "errors": validation_errors,
+                    "message": format_errors_message(validation_errors),
+                }
+            ]
+        },
+    )
+
+
+def test_validation_failed_for_array(
+    validation_spy, status_add_spy, mock_status_requests, lambda_event
+):
+    array_input = [input_events]
+    lambda_event_array_input = lambda_event
+    lambda_event_array_input["payload"]["step_data"]["input_events"] = array_input
+    lambda_event_array_input["payload"]["pipeline"]["task_config"][task_name][
+        "schema"
+    ] = schema_for_array
+
+    result = validate_json(lambda_event_array_input, {})
+    JsonSchemaValidator.validate_list.assert_called_once_with(
+        self=ANY, data=array_input
+    )
+    assert result == asdict(
+        StepData(
+            input_events=array_input,
+            status="VALIDATION_FAILED",
+            errors=validation_errors_for_array,
+        )
+    )
+    assert status_add_spy.call_count == 2
+    assert status_add_spy.call_args == (
+        {
+            "errors": [
+                {
+                    "message": format_errors_message(validation_errors_for_array),
                 }
             ]
         },
@@ -168,7 +203,7 @@ def lambda_event():
         "payload": {
             "pipeline": {
                 "id": "some-id",
-                "task_config": {task_name: {"schema": schema}},
+                "task_config": {task_name: {"schema": schema_for_object}},
             },
             "output_dataset": {"id": "some-dataset", "version": "some-version"},
             "step_data": {
