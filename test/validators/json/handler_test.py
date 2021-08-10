@@ -114,13 +114,51 @@ def test_no_schema_succeeds(lambda_event, mock_status_requests):
     )
 
 
-def test_s3_input(lambda_event, spy_read_s3_data, mock_status_requests):
+def test_s3_input(
+    lambda_event, spy_read_s3_data, validation_success, mock_status_requests
+):
+    s3_input = {"foo": "bar"}
     lambda_event_s3 = lambda_event
     lambda_event_s3["payload"]["step_data"]["input_events"] = None
-    lambda_event_s3["payload"]["step_data"]["s3_input_prefixes"] = {"foo": "bar"}
+    lambda_event_s3["payload"]["step_data"]["s3_input_prefixes"] = s3_input
+
+    result = validate_json(lambda_event_s3, {})
+    assert spy_read_s3_data.call_count == 1
+    assert result == asdict(
+        StepData(
+            input_events=None,
+            s3_input_prefixes=s3_input,
+            status="VALIDATION_SUCCESS",
+            errors=[],
+        )
+    )
+
+
+def test_s3_invalid_json(
+    lambda_event, status_add_spy, stub_invalid_s3_json_data, mock_status_requests
+):
+    s3_input = {"foo": "bar"}
+    lambda_event_s3 = lambda_event
+    lambda_event_s3["payload"]["step_data"]["input_events"] = None
+    lambda_event_s3["payload"]["step_data"]["s3_input_prefixes"] = s3_input
 
     validate_json(lambda_event_s3, {})
-    assert spy_read_s3_data.call_count == 1
+    assert status_add_spy.call_count == 2
+    assert status_add_spy.call_args == (
+        {
+            "errors": [
+                {
+                    "message": format_errors_message(
+                        [
+                            {
+                                "message": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+                            }
+                        ]
+                    ),
+                }
+            ]
+        },
+    )
 
 
 def test_handle_multiple_realtime_events(
@@ -189,7 +227,18 @@ def spy_read_s3_data(monkeypatch, mocker):
     import okdata.pipeline.validators.json.handler as json_handler
 
     def read_s3_data(s3_input_prefix):
-        return ""
+        return [""]
+
+    monkeypatch.setattr(json_handler, "read_s3_data", read_s3_data)
+    return mocker.spy(json_handler, "read_s3_data")
+
+
+@pytest.fixture
+def stub_invalid_s3_json_data(monkeypatch, mocker):
+    import okdata.pipeline.validators.json.handler as json_handler
+
+    def read_s3_data(s3_input_prefix):
+        return json.loads("{,}")
 
     monkeypatch.setattr(json_handler, "read_s3_data", read_s3_data)
     return mocker.spy(json_handler, "read_s3_data")

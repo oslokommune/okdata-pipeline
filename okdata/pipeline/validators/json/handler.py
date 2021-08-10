@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+from json import JSONDecodeError
 
 from aws_xray_sdk.core import patch_all, xray_recorder
 
@@ -61,7 +62,22 @@ def validate_json(event, context):
             )
         )
 
-    input_data = resolve_input_data(step_data)
+    try:
+        input_data = resolve_input_data(step_data)
+    except JSONDecodeError as json_error:
+        error_message = str(json_error)
+        errors = [{"message": error_message}]
+
+        status_add(errors=[{"message": format_errors_message(errors)}])
+
+        return asdict(
+            StepData(
+                input_events=step_data.input_events,
+                s3_input_prefixes=step_data.s3_input_prefixes,
+                status="VALIDATION_FAILED",
+                errors=[error_message],
+            )
+        )
 
     validation_errors = JsonSchemaValidator(step_config.schema).validate_list(
         input_data
@@ -108,10 +124,14 @@ def format_errors_message(errors):
 
 
 def format_error_message(error):
-    message = error["message"]
-    row = error["row"]
-    row_text = f"index {row}" if isinstance(row, int) else row
-    if "col" in error:
-        return "{} at {} on {}.".format(message, row_text, error["col"])
-    else:
-        return "{} at {}.".format(message, row_text)
+    message = error["message"].rstrip(".")
+
+    if "row" in error:
+        row = error["row"]
+        row_text = f"index {row}" if isinstance(row, int) else row
+        if "col" in error:
+            message = "{} at {} on {}".format(message, row_text, error["col"])
+        else:
+            message = "{} at {}".format(message, row_text)
+
+    return message + "."
