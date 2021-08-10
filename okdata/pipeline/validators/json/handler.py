@@ -65,17 +65,16 @@ def validate_json(event, context):
     try:
         input_data = resolve_input_data(step_data)
     except JSONDecodeError as json_error:
-        error_message = str(json_error)
-        errors = [{"message": error_message}]
+        errors = [{"message": str(json_error)}]
 
-        status_add(errors=[{"message": format_errors_message(errors)}])
+        status_add(errors=format_error_messages(errors))
 
         return asdict(
             StepData(
                 input_events=step_data.input_events,
                 s3_input_prefixes=step_data.s3_input_prefixes,
                 status="VALIDATION_FAILED",
-                errors=[error_message],
+                errors=errors,
             )
         )
 
@@ -84,7 +83,7 @@ def validate_json(event, context):
     )
 
     if validation_errors:
-        status_add(errors=[{"message": format_errors_message(validation_errors[:100])}])
+        status_add(errors=format_error_messages(validation_errors[:100]))
 
         return asdict(
             StepData(
@@ -113,14 +112,18 @@ def resolve_input_data(step_data: StepData):
     return None
 
 
-def format_errors_message(errors):
+def format_error_messages(errors):
     # Package `jsonschema` has only English error messages.
     error_details = "\n".join([format_error_message(error) for error in errors])
 
-    return {
-        "nb": f"Opplastet JSON er ugyldig.\n\nDetaljer:\n{error_details}",
-        "en": f"Uploaded JSON is invalid.\n\nDetails:\n{error_details}",
-    }
+    return [
+        {
+            "message": {
+                "nb": f"Opplastet JSON er ugyldig.\n\nDetaljer:\n{error_details}",
+                "en": f"Uploaded JSON is invalid.\n\nDetails:\n{error_details}",
+            }
+        }
+    ]
 
 
 def format_error_message(error):

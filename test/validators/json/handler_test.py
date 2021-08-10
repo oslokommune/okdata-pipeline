@@ -9,7 +9,7 @@ import pytest
 from okdata.aws.status.sdk import Status
 from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.models import StepData
-from okdata.pipeline.validators.json.handler import validate_json, format_errors_message
+from okdata.pipeline.validators.json.handler import format_error_messages, validate_json
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
 test_data_directory = Path(os.path.dirname(__file__), "data")
@@ -58,13 +58,7 @@ def test_validation_failed(
     )
     assert status_add_spy.call_count == 2
     assert status_add_spy.call_args == (
-        {
-            "errors": [
-                {
-                    "message": format_errors_message(validation_errors),
-                }
-            ]
-        },
+        {"errors": format_error_messages(validation_errors)},
     )
 
 
@@ -91,13 +85,7 @@ def test_validation_failed_for_array(
     )
     assert status_add_spy.call_count == 2
     assert status_add_spy.call_args == (
-        {
-            "errors": [
-                {
-                    "message": format_errors_message(validation_errors_for_array),
-                }
-            ]
-        },
+        {"errors": format_error_messages(validation_errors_for_array)},
     )
 
 
@@ -146,17 +134,13 @@ def test_s3_invalid_json(
     assert status_add_spy.call_count == 2
     assert status_add_spy.call_args == (
         {
-            "errors": [
-                {
-                    "message": format_errors_message(
-                        [
-                            {
-                                "message": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
-                            }
-                        ]
-                    ),
-                }
-            ]
+            "errors": format_error_messages(
+                [
+                    {
+                        "message": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+                    }
+                ]
+            )
         },
     )
 
