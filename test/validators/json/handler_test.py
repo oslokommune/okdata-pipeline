@@ -9,22 +9,13 @@ import pytest
 from okdata.aws.status.sdk import Status
 from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.models import StepData
-from okdata.pipeline.validators.json.handler import format_error_messages, validate_json
+from okdata.pipeline.validators.json.handler import validate_json
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
 test_data_directory = Path(os.path.dirname(__file__), "data")
 schema_for_object = json.loads((test_data_directory / "schema.json").read_text())
 schema_for_array = json.loads((test_data_directory / "schema_array.json").read_text())
 input_events = [{"id": "123", "year": "2021", "datetime": "bar"}]
-validation_errors = [
-    {"message": "'date' is a required property", "row": "root"},
-    {"message": "'bar' is not a 'date-time'", "row": "datetime"},
-]
-validation_errors_for_array = [
-    {"message": "'name' is a required property", "row": 0},
-    {"message": "'created' is a required property", "row": 0},
-]
-
 task_name = "json_validator"
 
 
@@ -53,12 +44,24 @@ def test_validation_failed(
         StepData(
             input_events=input_events,
             status="VALIDATION_FAILED",
-            errors=validation_errors,
+            errors=[
+                {"message": "'date' is a required property", "row": "root"},
+                {"message": "'bar' is not a 'date-time'", "row": "datetime"},
+            ],
         )
     )
     assert status_add_spy.call_count == 2
     assert status_add_spy.call_args == (
-        {"errors": format_error_messages(validation_errors)},
+        {
+            "errors": [
+                {
+                    "message": {
+                        "nb": "Opplastet JSON er ugyldig.\n\nDetaljer:\n'date' is a required property at root.\n'bar' is not a 'date-time' at datetime.",
+                        "en": "Uploaded JSON is invalid.\n\nDetails:\n'date' is a required property at root.\n'bar' is not a 'date-time' at datetime.",
+                    }
+                }
+            ]
+        },
     )
 
 
@@ -80,12 +83,24 @@ def test_validation_failed_for_array(
         StepData(
             input_events=array_input,
             status="VALIDATION_FAILED",
-            errors=validation_errors_for_array,
+            errors=[
+                {"message": "'name' is a required property", "row": 0},
+                {"message": "'created' is a required property", "row": 0},
+            ],
         )
     )
     assert status_add_spy.call_count == 2
     assert status_add_spy.call_args == (
-        {"errors": format_error_messages(validation_errors_for_array)},
+        {
+            "errors": [
+                {
+                    "message": {
+                        "nb": "Opplastet JSON er ugyldig.\n\nDetaljer:\n'name' is a required property at index 0.\n'created' is a required property at index 0.",
+                        "en": "Uploaded JSON is invalid.\n\nDetails:\n'name' is a required property at index 0.\n'created' is a required property at index 0.",
+                    }
+                }
+            ]
+        },
     )
 
 
@@ -134,13 +149,14 @@ def test_s3_invalid_json(
     assert status_add_spy.call_count == 2
     assert status_add_spy.call_args == (
         {
-            "errors": format_error_messages(
-                [
-                    {
-                        "message": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+            "errors": [
+                {
+                    "message": {
+                        "nb": "Opplastet JSON er ugyldig.\n\nDetaljer:\nExpecting property name enclosed in double quotes: line 1 column 2 (char 1).",
+                        "en": "Uploaded JSON is invalid.\n\nDetails:\nExpecting property name enclosed in double quotes: line 1 column 2 (char 1).",
                     }
-                ]
-            )
+                }
+            ]
         },
     )
 
