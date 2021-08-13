@@ -3,7 +3,7 @@ from dataclasses import asdict
 
 from aws_xray_sdk.core import patch_all, xray_recorder
 
-from okdata.aws.logging import log_add, log_exception, logging_wrapper
+from okdata.aws.logging import log_add, log_duration, log_exception, logging_wrapper
 from okdata.aws.status import status_add, status_wrapper
 from okdata.pipeline.models import Config, StepData
 from okdata.pipeline.exceptions import IllegalWrite
@@ -108,11 +108,15 @@ def create_distribution_with_retries(
         new_distribution = Distribution(
             filenames=copied_files, content_type=content_type
         )
-        return Dataset().create_distribution(
-            output_dataset.id,
-            output_dataset.version,
-            output_dataset.edition,
-            data=new_distribution.as_dict(),
+        dataset_client = Dataset()
+        return log_duration(
+            lambda: dataset_client.create_distribution(
+                output_dataset.id,
+                output_dataset.version,
+                output_dataset.edition,
+                data=new_distribution.as_dict(),
+            ),
+            "create_distribution_ms",
         )
     except Exception as e:
         if retries > 0:
@@ -124,7 +128,11 @@ def create_distribution_with_retries(
 
 
 def is_latest_edition(dataset_id, version, edition):
-    latest_edition = Dataset().get_latest_edition(dataset_id, version)
+    dataset_client = Dataset()
+    latest_edition = log_duration(
+        lambda: dataset_client.get_latest_edition(dataset_id, version),
+        "get_latest_edition_ms",
+    )
     is_latest = [dataset_id, version, edition] == latest_edition["Id"].split("/")
     log_add(is_latest_edition=is_latest)
     return is_latest

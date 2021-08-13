@@ -5,7 +5,7 @@ from dataclasses import asdict
 import boto3
 from aws_xray_sdk.core import patch_all, xray_recorder
 
-from okdata.aws.logging import logging_wrapper, log_add
+from okdata.aws.logging import log_add, log_duration, logging_wrapper
 from okdata.pipeline.common import CONFIDENTIALITY_MAP
 from okdata.pipeline.models import Config, StepData
 from okdata.sdk.data.dataset import Dataset
@@ -24,7 +24,10 @@ def write_kinesis(event, context):
     version = pipeline_config.payload.output_dataset.version
     log_add(dataset_id=dataset_id, version=version)
 
-    dataset = Dataset().get_dataset(dataset_id, retries=3)
+    dataset_client = Dataset()
+    dataset = log_duration(
+        lambda: dataset_client.get_dataset(dataset_id, retries=3), "get_dataset_ms"
+    )
     access_rights = dataset["accessRights"]
     confidentiality = CONFIDENTIALITY_MAP[access_rights]
 
