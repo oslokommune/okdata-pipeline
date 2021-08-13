@@ -50,6 +50,9 @@ functions:
     handler: okdata.pipeline.validators.csv.validator.validate_csv
   validate-json:
     handler: okdata.pipeline.validators.json.handler.validate_json
+    environment:
+      OKDATA_CLIENT_ID: json-writer
+      OKDATA_CLIENT_SECRET: ${ssm:/dataplatform/json-writer/keycloak-client-secret~true}
   write-kinesis:
     handler: okdata.pipeline.writers.kinesis.handler.write_kinesis
     timeout: 70
