@@ -108,15 +108,14 @@ def create_distribution_with_retries(
         new_distribution = Distribution(
             filenames=copied_files, content_type=content_type
         )
-        dataset_client = Dataset()
         return log_duration(
-            lambda: dataset_client.create_distribution(
+            lambda: Dataset().create_distribution(
                 output_dataset.id,
                 output_dataset.version,
                 output_dataset.edition,
                 data=new_distribution.as_dict(),
             ),
-            "create_distribution_ms",
+            "create_distribution_duration",
         )
     except Exception as e:
         if retries > 0:
@@ -128,10 +127,9 @@ def create_distribution_with_retries(
 
 
 def is_latest_edition(dataset_id, version, edition):
-    dataset_client = Dataset()
     latest_edition = log_duration(
-        lambda: dataset_client.get_latest_edition(dataset_id, version),
-        "get_latest_edition_ms",
+        lambda: Dataset().get_latest_edition(dataset_id, version),
+        "get_latest_edition_duration",
     )
     is_latest = [dataset_id, version, edition] == latest_edition["Id"].split("/")
     log_add(is_latest_edition=is_latest)

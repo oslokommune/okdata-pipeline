@@ -24,9 +24,9 @@ def write_kinesis(event, context):
     version = pipeline_config.payload.output_dataset.version
     log_add(dataset_id=dataset_id, version=version)
 
-    dataset_client = Dataset()
     dataset = log_duration(
-        lambda: dataset_client.get_dataset(dataset_id, retries=3), "get_dataset_ms"
+        lambda: Dataset().get_dataset(dataset_id, retries=3),
+        "get_dataset_duration",
     )
     access_rights = dataset["accessRights"]
     confidentiality = CONFIDENTIALITY_MAP[access_rights]
