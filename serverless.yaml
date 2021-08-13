@@ -30,6 +30,8 @@ provider:
     STATUS_API_URL: ${ssm:/dataplatform/shared/api-gateway-url}/status-api
     VERSION: ${self:custom.version}
     OKDATA_ENVIRONMENT: ${self:custom.okdataEnvironment.${self:provider.stage}, self:custom.okdataEnvironment.dev}
+    OKDATA_CLIENT_ID: ${self:service}
+    OKDATA_CLIENT_SECRET: ${ssm:/dataplatform/${self:service}/keycloak-client-secret~true}
 package:
   exclude:
     - '**/*'
@@ -50,9 +52,6 @@ functions:
     handler: okdata.pipeline.validators.csv.validator.validate_csv
   validate-json:
     handler: okdata.pipeline.validators.json.handler.validate_json
-    environment:
-      OKDATA_CLIENT_ID: json-writer
-      OKDATA_CLIENT_SECRET: ${ssm:/dataplatform/json-writer/keycloak-client-secret~true}
   write-kinesis:
     handler: okdata.pipeline.writers.kinesis.handler.write_kinesis
     timeout: 70
@@ -60,9 +59,6 @@ functions:
     iamManagedPoliciesInherit: true
     iamManagedPolicies:
       - arn:aws:iam::#{AWS::AccountId}:policy/kinesis-writer-policy
-    environment:
-      CLIENT_ID: kinesis-writer
-      CLIENT_SECRET: ${ssm:/dataplatform/kinesis-writer/keycloak-client-secret~true}
   write-s3:
     handler: okdata.pipeline.writers.s3.handlers.write_s3
     timeout: 900
@@ -71,9 +67,6 @@ functions:
     iamManagedPoliciesInherit: true
     iamManagedPolicies:
       - arn:aws:iam::#{AWS::AccountId}:policy/s3_writer_policy
-    environment:
-      CLIENT_ID: s3-writer
-      CLIENT_SECRET: ${ssm:/dataplatform/s3-writer/keycloak-client-secret~true}
   xls-to-csv:
     handler: okdata.pipeline.converters.xls.main.xls_to_csv
     timeout: 120

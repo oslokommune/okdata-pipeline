@@ -1,10 +1,9 @@
-import os
 import re
 from dataclasses import asdict
 
 from aws_xray_sdk.core import patch_all, xray_recorder
 
-from okdata.aws.logging import log_add, log_exception, logging_wrapper
+from okdata.aws.logging import log_add, log_duration, log_exception, logging_wrapper
 from okdata.aws.status import status_add, status_wrapper
 from okdata.pipeline.models import Config, StepData
 from okdata.pipeline.exceptions import IllegalWrite
@@ -14,18 +13,11 @@ from okdata.pipeline.writers.s3.exceptions import (
 )
 from okdata.pipeline.writers.s3.models import Distribution, TaskConfig
 from okdata.pipeline.writers.s3.services import S3Service
-from okdata.sdk.config import Config as OrigoSdkConfig
 from okdata.sdk.data.dataset import Dataset
 
 patch_all()
 
 s3_service = S3Service()
-
-origo_config = OrigoSdkConfig()
-origo_config.config["cacheCredentials"] = False
-origo_config.config["client_id"] = os.environ["CLIENT_ID"]
-origo_config.config["client_secret"] = os.environ["CLIENT_SECRET"]
-dataset_client = Dataset(origo_config)
 
 
 @status_wrapper
@@ -116,11 +108,14 @@ def create_distribution_with_retries(
         new_distribution = Distribution(
             filenames=copied_files, content_type=content_type
         )
-        return dataset_client.create_distribution(
-            output_dataset.id,
-            output_dataset.version,
-            output_dataset.edition,
-            data=new_distribution.as_dict(),
+        return log_duration(
+            lambda: Dataset().create_distribution(
+                output_dataset.id,
+                output_dataset.version,
+                output_dataset.edition,
+                data=new_distribution.as_dict(),
+            ),
+            "create_distribution_duration",
         )
     except Exception as e:
         if retries > 0:
@@ -132,7 +127,10 @@ def create_distribution_with_retries(
 
 
 def is_latest_edition(dataset_id, version, edition):
-    latest_edition = dataset_client.get_latest_edition(dataset_id, version)
+    latest_edition = log_duration(
+        lambda: Dataset().get_latest_edition(dataset_id, version),
+        "get_latest_edition_duration",
+    )
     is_latest = [dataset_id, version, edition] == latest_edition["Id"].split("/")
     log_add(is_latest_edition=is_latest)
     return is_latest
