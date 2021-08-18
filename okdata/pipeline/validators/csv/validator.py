@@ -45,6 +45,7 @@ class StepConfig:
     def from_task_config(cls, event):
         return cls(**event)
 
+
 @status_wrapper
 @logging_wrapper
 @xray_recorder.capture("validate_csv")
@@ -99,11 +100,22 @@ def validate_csv(event, context):
                 errors=[
                     {
                         "message": {
-                            "nb": "Denne filen mangler header. En CSV trenger header.",
-                            "en": "This file has no header. A CSV needs a header.",
+                            "nb": "Denne filen mangler header.",
+                            "en": "This file has no header.",
                         }
                     }
                 ]
+            )
+            return _with_error(
+                config,
+                [
+                    {
+                        "message": {
+                            "nb": "Filen mangler header",
+                            "en": "This file has no header.",
+                        }
+                    }
+                ],
             )
 
     try:

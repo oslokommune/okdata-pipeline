@@ -1,7 +1,14 @@
 import json
 
+import pytest
+
+from okdata.aws.status.sdk import Status
 import okdata.pipeline.validators.csv as csv_validator
-from okdata.pipeline.validators.csv.validator import StepConfig, validate_csv
+from okdata.pipeline.validators.csv.validator import (
+    StepConfig,
+    validate_csv,
+    format_errors,
+)
 
 
 def test_config():
@@ -63,37 +70,17 @@ def test_csv_validator_errors(mocker, event, mock_status):
         assert len(error_list) == 2
 
 
-def csv_generator_validationerror():
-    for element in [
-        {
-            "row": 0,
-            "column": "Bydelsnr",
-            "message": "could not convert string float: 'gamle oslo'",
-        },
-        {
-            "row": 1,
-            "column": "Bydelsnr",
-            "message": "could not convert string float: 'gamle oslo'",
-        },
-    ]:
-        yield element
-
-
 def test_format_errors():
-    e = csv_generator_validationerror()
-    errors = [
-        {
-            "message": {
-                "nb": "\n".join(
-                    [csv_validator.validator.format_errors(er, "nb") for er in e]
-                ),
-                "en": "\n".join(
-                    [csv_validator.validator.format_errors(er, "en") for er in e]
-                ),
-            }
-        }
-    ]
-    assert len(errors) == 1
+    e = {
+        "row": 1,
+        "column": "Bydelsnr",
+        "message": "could not convert string float: 'gamle oslo'",
+    }
+    result = format_errors(e, "nb")
+    assert (
+        result
+        == "Feil på linje 1, kolonne Bydelsnr. Mer beskrivelse: could not convert string float: 'gamle oslo'"
+    )
 
 
 @pytest.fixture
