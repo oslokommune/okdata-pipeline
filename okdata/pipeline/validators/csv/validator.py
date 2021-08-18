@@ -8,10 +8,13 @@ import boto3
 from aws_xray_sdk.core import patch_all, xray_recorder
 
 from okdata.aws.logging import log_add, logging_wrapper
+from okdata.aws.status import status_wrapper, status_add
+
 from okdata.pipeline.models import Config
 from okdata.pipeline.validators.csv import string_reader
 from okdata.pipeline.validators.csv.parser import ParseErrors, parse_csv
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
+
 
 patch_all()
 
@@ -43,14 +46,21 @@ class StepConfig:
         return cls(**event)
 
 
+@status_wrapper
 @logging_wrapper
 @xray_recorder.capture("validate_csv")
 def validate_csv(event, context):
     config = Config.from_lambda_event(event)
-
+    output_dataset = config.payload.output_dataset
     step_config = StepConfig.from_task_config(config.task_config)
 
     s3_prefix = config.payload.output_dataset.s3_prefix
+
+    status_add(
+        domain="dataset",
+        domain_id=f"{output_dataset.id}/{output_dataset.version}",
+        operation=config.task,
+    )
 
     log_add(
         header_row=step_config.header_row,
@@ -59,13 +69,6 @@ def validate_csv(event, context):
         schema=step_config.schema,
         output_prefix=s3_prefix,
     )
-
-    if not step_config.schema:
-        log_add(notice="No Schema provided for validation")
-        config.payload.step_data.status = Status.VALIDATION_SUCCESS.value
-        # 2020.06: Validation done optionally - we now return ok if we don't supply a
-        # schema for the validation step
-        return asdict(config.payload.step_data)
 
     input_prefix = next(iter(config.payload.step_data.s3_input_prefixes.values()))
     log_add(s3_input_prefix=input_prefix)
@@ -83,15 +86,81 @@ def validate_csv(event, context):
     )
     header = None
     if step_config.header_row:
-        header = next(reader)
+        try:
+            header = next(reader)
+        except StopIteration:
+            status_add(
+                errors=[
+                    {
+                        "message": {
+                            "nb": "Denne filen mangler header.",
+                            "en": "This file has no header.",
+                        }
+                    }
+                ]
+            )
+            return _with_error(
+                config,
+                [
+                    {
+                        "message": {
+                            "nb": "Filen mangler header",
+                            "en": "This file has no header.",
+                        }
+                    }
+                ],
+            )
+
     try:
         csv_data = parse_csv(reader, step_config.schema, header)
+        if not csv_data:
+            status_add(
+                errors=[
+                    {
+                        "message": {
+                            "nb": "Dette var en tom fil. Fyll den med data.",
+                            "en": "This was an empty file. Fill the file with data.",
+                        }
+                    }
+                ]
+            )
+            return _with_error(
+                config, [{"message": {"nb": "Tom fil", "en": "Empty file."}}]
+            )
+
     except ParseErrors as p:
+        status_add(
+            errors=[
+                {
+                    "message": {
+                        "nb": "\n".join([format_errors(e, "nb") for e in p.errors]),
+                        "en": "\n".join([format_errors(e, "en") for e in p.errors]),
+                    }
+                }
+            ]
+        )
         return _with_error(config, p.errors)
+
+    if not step_config.schema:
+        log_add(notice="No Schema provided for validation")
+        config.payload.step_data.status = Status.VALIDATION_SUCCESS.value
+        # 2020.06: Validation done optionally - we now return ok if we don't supply a
+        # schema for the validation step
+        return asdict(config.payload.step_data)
 
     validation_errors = JsonSchemaValidator(step_config.schema).validate(csv_data)
 
     if validation_errors:
+        status_add(
+            errors=[
+                {
+                    "message": {
+                        "nb": f"Valideringen feilet med feilmelding: {validation_errors}",
+                        "en": f"The validation failed with: {validation_errors}",
+                    }
+                }
+            ]
+        )
         return _with_error(config, errors=validation_errors)
 
     config.payload.step_data.status = Status.VALIDATION_SUCCESS.value
@@ -104,3 +173,18 @@ def _with_error(config: Config, errors):
     config.payload.step_data.status = Status.VALIDATION_FAILED.value
     config.payload.step_data.errors = errors[:100]
     return asdict(config.payload.step_data)
+
+
+def format_errors(errors, language):
+    line = errors["row"]
+    column = errors["column"]
+    message = errors["message"]
+
+    if language == "nb":
+        return "Feil på linje {}, kolonne {}. Mer beskrivelse: {}".format(
+            line, column, message
+        )
+    else:
+        return "You have an error on line {}, column {}. More description: {}".format(
+            line, column, message
+        )
