@@ -18,7 +18,6 @@ from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
 patch_all()
 
-s3 = boto3.client("s3")
 BUCKET = os.environ["BUCKET_NAME"]
 
 
@@ -50,6 +49,7 @@ class StepConfig:
 @logging_wrapper
 @xray_recorder.capture("validate_csv")
 def validate_csv(event, context):
+    s3 = boto3.client("s3")
     config = Config.from_lambda_event(event)
     output_dataset = config.payload.output_dataset
     step_config = StepConfig.from_task_config(config.task_config)
