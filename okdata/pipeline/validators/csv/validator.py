@@ -70,14 +70,6 @@ def validate_csv(event, context):
         output_prefix=s3_prefix,
     )
 
-    # TODO: Hotfix for Deichman. Remove once we're solved the problem.
-    if not step_config.schema:
-        log_add(notice="No Schema provided for validation")
-        config.payload.step_data.status = Status.VALIDATION_SUCCESS.value
-        # 2020.06: Validation done optionally - we now return ok if we don't supply a
-        # schema for the validation step
-        return asdict(config.payload.step_data)
-
     input_prefix = next(iter(config.payload.step_data.s3_input_prefixes.values()))
     log_add(s3_input_prefix=input_prefix)
     objects = s3.list_objects_v2(Bucket=BUCKET, Prefix=input_prefix)
@@ -87,7 +79,7 @@ def validate_csv(event, context):
 
     response = s3.get_object(Bucket=BUCKET, Key=s3_path)
     reader = csv.reader(
-        string_reader.from_response(response),
+        string_reader.from_response(response, gzipped=s3_path.endswith(".gz")),
         dialect="unix",
         delimiter=step_config.delimiter,
         quotechar=step_config.quote,

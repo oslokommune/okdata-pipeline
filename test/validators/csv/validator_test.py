@@ -43,8 +43,6 @@ def test_csv_validator(event):
     assert len(result["errors"]) == 0
 
 
-# Failing, see https://jira.oslo.kommune.no/browse/DP-2231.
-@pytest.mark.xfail
 @mock_s3
 def test_csv_validator_gzip(event):
     _put_s3(event, "valid.csv.gz", gzipped=True)
