@@ -63,7 +63,7 @@ def s3_response(s3, s3_object):
 
 @fixture
 def event():
-    input = {
+    e = {
         "execution_name": "boligpriser-UUID",
         "task": "validate_input",
         "payload": {
@@ -91,7 +91,5 @@ def event():
         },
     }
     with open("test/validators/csv/data/test_schema.json", "r") as f:
-        input["payload"]["pipeline"]["task_config"]["validate_input"][
-            "schema"
-        ] = f.read()
-    return input
+        e["payload"]["pipeline"]["task_config"]["validate_input"]["schema"] = f.read()
+    return e
