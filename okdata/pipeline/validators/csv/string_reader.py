@@ -2,23 +2,19 @@ import gzip
 
 
 def from_response(raw_response, gzipped=False):
-    lines = raw_response["Body"].iter_lines()
+    body = raw_response["Body"]
 
     if gzipped:
-        compressed_line = None
+        data = b""
 
-        try:
-            compressed_line = next(lines)
-        except StopIteration:
-            yield ""
+        for chunk in body.iter_chunks():
+            data += chunk
 
-        if compressed_line:
-            for line in (
-                gzip.decompress(compressed_line).decode(encoding="utf-8").split("\n")
-            ):
-                if line:
-                    yield line
+        for line in gzip.decompress(data).decode(encoding="utf-8").split("\n"):
+            if line:
+                yield line
 
     else:
-        for line in lines:
-            yield line.decode(encoding="utf-8")
+        for line in body.iter_lines():
+            if line:
+                yield line.decode(encoding="utf-8")
