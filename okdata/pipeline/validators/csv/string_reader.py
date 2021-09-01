@@ -5,7 +5,8 @@ def from_response(raw_response, gzipped=False):
     body = raw_response["Body"]
 
     if gzipped:
-        # Offset by 32 bytes to skip the gzip header.
+        # Plus 32 to automatically accept either the zlib or gzip format:
+        # https://docs.python.org/3/library/zlib.html#zlib.decompress
         decompressor = zlib.decompressobj(wbits=32 + zlib.MAX_WBITS)
         rest = ""
 
