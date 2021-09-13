@@ -49,6 +49,7 @@ def test_csv_validator(event):
     [
         "valid.csv.gz",
         "valid-no-final-newline.csv.gz",
+        "valid-multibyte.csv.gz",
     ],
 )
 def test_csv_validator_gzip(event, input_file):
