@@ -1,4 +1,3 @@
-# The `serverless-granular-iam` plugin only supports Serverless 1.x.
 frameworkVersion: ">=1.64.0 <2.0.0"
 
 service: okdata-pipeline
@@ -45,9 +44,6 @@ functions:
     timeout: 900
   invoke-lambda:
     handler: okdata.pipeline.lambda_invoker.invoke_lambda
-    iamRoleStatements: []
-    iamManagedPolicies:
-      - arn:aws:iam::#{AWS::AccountId}:policy/lambda-invoker-policy
   validate-csv:
     handler: okdata.pipeline.validators.csv.validator.validate_csv
   validate-json:
@@ -55,25 +51,16 @@ functions:
   write-kinesis:
     handler: okdata.pipeline.writers.kinesis.handler.write_kinesis
     timeout: 70
-    iamRoleStatements: []
-    iamManagedPoliciesInherit: true
-    iamManagedPolicies:
-      - arn:aws:iam::#{AWS::AccountId}:policy/kinesis-writer-policy
   write-s3:
     handler: okdata.pipeline.writers.s3.handlers.write_s3
     timeout: 900
     tracing: Active
-    iamRoleStatements: []
-    iamManagedPoliciesInherit: true
-    iamManagedPolicies:
-      - arn:aws:iam::#{AWS::AccountId}:policy/s3_writer_policy
   xls-to-csv:
     handler: okdata.pipeline.converters.xls.main.xls_to_csv
     timeout: 120
 
 plugins:
   - serverless-es-logs
-  - serverless-granular-iam
   - serverless-plugin-git-variables
   - serverless-pseudo-parameters
   - serverless-python-requirements
