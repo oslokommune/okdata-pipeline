@@ -1,4 +1,4 @@
-frameworkVersion: ">=1.64.0 <2.0.0"
+frameworkVersion: ">=2.60.2 <3.0.0"
 
 service: okdata-pipeline
 
