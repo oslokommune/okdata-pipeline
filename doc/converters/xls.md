@@ -1,6 +1,6 @@
 # converters.xls
 
-Lambda function to transform Excel files to CSV.
+Pipeline component for transforming Excel files to CSV.
 
 ## Input event format
 
