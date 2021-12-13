@@ -1,6 +1,6 @@
 # validators.csv
 
-AWS Lambda handler for validating CSV against a JSON schema.
+Pipeline component for validating CSV against a JSON schema.
 
 First the function will try to parse the CSV using the JSON schema by trying to
 convert string values to numbers/booleans/etc. If this is successful, the

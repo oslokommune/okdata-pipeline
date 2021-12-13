@@ -1,6 +1,6 @@
 # lambda-invoker
 
-Lambda function to invoke other Lambda functions.
+Pipeline component for invoking other Lambda functions. Typically used in edge cases.
 
 ## Input event format
 

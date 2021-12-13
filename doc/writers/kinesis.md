@@ -1,7 +1,6 @@
 # writers.kinesis
 
-Lambda function for writing to kinesis streams with prefix
-`dataplatform.dataset`.
+Pipeline component for writing to kinesis streams with prefix `dataplatform.dataset`.
 
 ## Input event
 
