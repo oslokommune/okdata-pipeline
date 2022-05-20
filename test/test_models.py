@@ -6,175 +6,91 @@ import pytest
 from okdata.pipeline.models import Config, OutputDataset, Payload, Pipeline, StepData
 
 
-event_pipeline_lambda_event = {
-    "execution_name": "test_execution",
-    "task": "kinesis_writer",
-    "payload": {
-        "pipeline": {
-            "id": "some-id",
-            "task_config": {"kinesis_writer": {"some_config": "some_value"}},
-        },
-        "output_dataset": {"id": "some-id", "version": "1"},
-        "step_data": {
-            "input_events": [{"foo": "bar"}, {"foo": "car"}],
-            "status": "PENDING",
-            "errors": [],
-        },
-    },
-}
-
-s3_pipeline_lambda_event = {
-    "execution_name": "test_execution",
-    "task": "s3_writer",
-    "payload": {
-        "pipeline": {
-            "id": "some-id",
-            "task_config": {"s3_writer": {"some_config": "some_value"}},
-        },
-        "output_dataset": {
-            "id": "some-id",
-            "version": "1",
-            "edition": "some-edition",
-            "s3_prefix": "some-s3-prefix",
-        },
-        "step_data": {
-            "s3_input_prefixes": {
-                "input1": "some-s3-prefix",
-                "input2": "some-s3-prefix",
-                "input3": "some-s3-prefix",
+@pytest.fixture
+def s3_pipeline_lambda_event():
+    return {
+        "execution_name": "test_execution",
+        "task": "s3_writer",
+        "payload": {
+            "pipeline": {
+                "id": "some-id",
+                "task_config": {"s3_writer": {"some_config": "some_value"}},
             },
-            "status": "PENDING",
-            "errors": [],
-        },
-    },
-}
-
-event_with_default_task_config = {
-    "execution_name": "test_execution",
-    "task": "kinesis_writer",
-    "payload": {
-        "pipeline": {
-            "id": "some-id",
-            "task_config": {},
-        },
-        "output_dataset": {"id": "some-id", "version": "1"},
-        "step_data": {
-            "input_events": [{"foo": "bar"}],
-            "status": "PENDING",
-            "errors": [],
-        },
-    },
-    "task_config": {"some_config": "some value"},
-}
-
-event_overriding_default_task_config = {
-    "execution_name": "test_execution",
-    "task": "kinesis_writer",
-    "payload": {
-        "pipeline": {
-            "id": "some-id",
-            "task_config": {"kinesis_writer": {"some_config": "some other value"}},
-        },
-        "output_dataset": {"id": "some-id", "version": "1"},
-        "step_data": {
-            "input_events": [{"foo": "bar"}],
-            "status": "PENDING",
-            "errors": [],
-        },
-    },
-    "task_config": {"some_config": "some value"},
-}
-
-event_with_null_task_config = {
-    "execution_name": "test_execution",
-    "task": "kinesis_writer",
-    "payload": {
-        "pipeline": {
-            "id": "some-id",
-            "task_config": None,
-        },
-        "output_dataset": {"id": "some-id", "version": "1"},
-        "step_data": {
-            "input_events": [{"foo": "bar"}],
-            "status": "PENDING",
-            "errors": [],
-        },
-    },
-    "task_config": {"some_config": "some value"},
-}
-
-event_with_missing_task_config = {
-    "execution_name": "test_execution",
-    "task": "kinesis_writer",
-    "payload": {
-        "pipeline": {
-            "id": "some-id",
-        },
-        "output_dataset": {"id": "some-id", "version": "1"},
-        "step_data": {
-            "input_events": [{"foo": "bar"}],
-            "status": "PENDING",
-            "errors": [],
-        },
-    },
-    "task_config": {"some_config": "some value"},
-}
-
-event_with_null_task_config_child = {
-    "execution_name": "test_execution",
-    "task": "kinesis_writer",
-    "payload": {
-        "pipeline": {
-            "id": "some-id",
-            "task_config": {"kinesis_writer": None},
-        },
-        "output_dataset": {"id": "some-id", "version": "1"},
-        "step_data": {
-            "input_events": [{"foo": "bar"}, {"foo": "car"}],
-            "status": "PENDING",
-            "errors": [],
-        },
-    },
-    "task_config": {"some_config": "some value"},
-}
-
-event_merge_task_config = {
-    "execution_name": "test_execution",
-    "task": "kinesis_writer",
-    "payload": {
-        "pipeline": {
-            "id": "some-id",
-            "task_config": {
-                "kinesis_writer": {
-                    "some_config": "overridden value",
-                    "some_new_config": "some other value",
-                }
+            "output_dataset": {
+                "id": "some-id",
+                "version": "1",
+                "edition": "some-edition",
+                "s3_prefix": "some-s3-prefix",
+            },
+            "step_data": {
+                "s3_input_prefixes": {
+                    "input1": "some-s3-prefix",
+                    "input2": "some-s3-prefix",
+                    "input3": "some-s3-prefix",
+                },
+                "status": "PENDING",
+                "errors": [],
             },
         },
-        "output_dataset": {"id": "some-id", "version": "1"},
-        "step_data": {
-            "input_events": [{"foo": "bar"}],
-            "status": "PENDING",
-            "errors": [],
-        },
-    },
-    "task_config": {
+        "task_config": {"some_config": "some value"},
+    }
+
+
+@pytest.fixture
+def event_with_default_task_config(s3_pipeline_lambda_event):
+    s3_pipeline_lambda_event["payload"]["pipeline"]["task_config"] = {}
+    return s3_pipeline_lambda_event
+
+
+@pytest.fixture
+def event_overriding_default_task_config(s3_pipeline_lambda_event):
+    s3_pipeline_lambda_event["payload"]["pipeline"]["task_config"]["s3_writer"] = {
+        "some_config": "some other value"
+    }
+    return s3_pipeline_lambda_event
+
+
+@pytest.fixture
+def event_with_null_task_config(s3_pipeline_lambda_event):
+    s3_pipeline_lambda_event["payload"]["pipeline"]["task_config"] = None
+    return s3_pipeline_lambda_event
+
+
+@pytest.fixture
+def event_with_missing_task_config(s3_pipeline_lambda_event):
+    del s3_pipeline_lambda_event["payload"]["pipeline"]["task_config"]
+    return s3_pipeline_lambda_event
+
+
+@pytest.fixture
+def event_with_null_task_config_child(s3_pipeline_lambda_event):
+    s3_pipeline_lambda_event["payload"]["pipeline"]["task_config"]["s3_writer"] = None
+    return s3_pipeline_lambda_event
+
+
+@pytest.fixture
+def event_merge_task_config(s3_pipeline_lambda_event):
+    s3_pipeline_lambda_event["payload"]["pipeline"]["task_config"]["s3_writer"] = {
+        "some_config": "overridden value",
+        "some_new_config": "some other value",
+    }
+    s3_pipeline_lambda_event["task_config"] = {
         "some_config": "some value",
         "some_unchanged_config": "unchanged value",
-    },
-}
+    }
+    return s3_pipeline_lambda_event
 
 
-def test_config_types():
-    config = Config.from_lambda_event(event_pipeline_lambda_event)
+def test_config_types(s3_pipeline_lambda_event):
+    config = Config.from_lambda_event(s3_pipeline_lambda_event)
     assert isinstance(config.payload, Payload)
     assert isinstance(config.payload.pipeline, Pipeline)
     assert isinstance(config.payload.step_data, StepData)
     assert isinstance(config.payload.output_dataset, OutputDataset)
 
 
-def test_config_immutable():
-    config = Config.from_lambda_event(event_pipeline_lambda_event)
+def test_config_immutable(s3_pipeline_lambda_event):
+    config = Config.from_lambda_event(s3_pipeline_lambda_event)
     with pytest.raises(FrozenInstanceError):
         config.execution_name = "bleh"
     with pytest.raises(FrozenInstanceError):
@@ -184,26 +100,7 @@ def test_config_immutable():
     config.payload.step_data.s3_input_prefixes = {"Mutable": "ok"}
 
 
-def test_config_from_event_pipeline_lambda_event():
-
-    config = Config.from_lambda_event(event_pipeline_lambda_event)
-
-    assert config.execution_name == "test_execution"
-    assert config.task == "kinesis_writer"
-    assert config.payload.pipeline == Pipeline(
-        id="some-id",
-        task_config={"kinesis_writer": {"some_config": "some_value"}},
-    )
-    assert config.payload.output_dataset == OutputDataset(id="some-id", version="1")
-    assert config.payload.step_data == StepData(
-        input_events=[{"foo": "bar"}, {"foo": "car"}],
-        status="PENDING",
-        errors=[],
-    )
-    assert config.payload.step_data.input_count == 2
-
-
-def test_config_from_s3_pipeline_lambda_event():
+def test_config_from_s3_pipeline_lambda_event(s3_pipeline_lambda_event):
     config = Config.from_lambda_event(s3_pipeline_lambda_event)
 
     assert config.execution_name == "test_execution"
@@ -227,8 +124,8 @@ def test_config_from_s3_pipeline_lambda_event():
     assert config.payload.step_data.input_count == 3
 
 
-def test_config_from_lambda_event_value_error():
-    value_error_event_1 = deepcopy(event_pipeline_lambda_event)
+def test_config_from_lambda_event_value_error(s3_pipeline_lambda_event):
+    value_error_event_1 = deepcopy(s3_pipeline_lambda_event)
     value_error_event_1["payload"]["step_data"] = {
         "input_events": [{"foo": "bar"}, {"foo": "car"}],
         "s3_input_prefixes": {"input1": "some-s3-prefix"},
@@ -244,7 +141,7 @@ def test_config_from_lambda_event_value_error():
         == "Can only set values for one of 's3_input_prefixes' or 'input_events'"
     )
 
-    value_error_event_2 = deepcopy(event_pipeline_lambda_event)
+    value_error_event_2 = deepcopy(s3_pipeline_lambda_event)
     value_error_event_2["payload"]["step_data"] = {
         "status": "PENDING",
         "errors": [],
@@ -259,37 +156,37 @@ def test_config_from_lambda_event_value_error():
     )
 
 
-def test_default_task_config():
+def test_default_task_config(event_with_default_task_config):
     config = Config.from_lambda_event(event_with_default_task_config)
 
     assert config.task_config["some_config"] == "some value"
 
 
-def test_override_default_task_config():
+def test_override_default_task_config(event_overriding_default_task_config):
     config = Config.from_lambda_event(event_overriding_default_task_config)
 
     assert config.task_config["some_config"] == "some other value"
 
 
-def test_handle_null_task_config():
+def test_handle_null_task_config(event_with_null_task_config):
     config = Config.from_lambda_event(event_with_null_task_config)
 
     assert config.task_config["some_config"] == "some value"
 
 
-def test_handle_missing_task_config():
+def test_handle_missing_task_config(event_with_missing_task_config):
     config = Config.from_lambda_event(event_with_missing_task_config)
 
     assert config.task_config["some_config"] == "some value"
 
 
-def test_handle_null_task_config_child():
+def test_handle_null_task_config_child(event_with_null_task_config_child):
     config = Config.from_lambda_event(event_with_null_task_config_child)
 
     assert config.task_config["some_config"] == "some value"
 
 
-def test_merging_task_config():
+def test_merging_task_config(event_merge_task_config):
     config = Config.from_lambda_event(event_merge_task_config)
 
     assert config.task_config["some_config"] == "overridden value"
