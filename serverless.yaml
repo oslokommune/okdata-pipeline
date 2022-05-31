@@ -48,9 +48,6 @@ functions:
     handler: okdata.pipeline.validators.csv.validator.validate_csv
   validate-json:
     handler: okdata.pipeline.validators.json.handler.validate_json
-  write-kinesis:
-    handler: okdata.pipeline.writers.kinesis.handler.write_kinesis
-    timeout: 70
   write-s3:
     handler: okdata.pipeline.writers.s3.handlers.write_s3
     timeout: 900
