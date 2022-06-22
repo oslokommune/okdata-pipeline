@@ -42,7 +42,7 @@ llvmlite==0.36.0
     # via numba
 numba==0.53.1
     # via fastparquet
-numpy==1.21.0
+numpy==1.22.4
     # via
     #   fastparquet
     #   numba
