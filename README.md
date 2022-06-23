@@ -18,7 +18,7 @@ Dataplattform](https://oslokommune.github.io/dataplattform/).
 ## Setup
 
 1. Install [Serverless Framework](https://serverless.com/framework/docs/getting-started/)
-2. python3.7 -m venv .venv
+2. python3.8 -m venv .venv
 3. Install Serverless plugins: `make init`
 4. Install Python toolchain: `python3 -m pip install (--user) tox black pip-tools`
    - If running with `--user` flag, add `$HOME/.local/bin` to `$PATH`
