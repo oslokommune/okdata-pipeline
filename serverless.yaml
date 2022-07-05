@@ -1,4 +1,4 @@
-frameworkVersion: ">=2.60.2 <3.0.0"
+frameworkVersion: ">=3.14.0 <4.0.0"
 
 service: okdata-pipeline
 
@@ -12,10 +12,13 @@ provider:
     name: ${self:custom.deploymentBucket.${self:provider.stage}, self:custom.deploymentBucket.dev}
     serverSideEncryption: AES256
   deploymentPrefix: deploy
-  rolePermissionsBoundary: "arn:aws:iam::#{AWS::AccountId}:policy/oslokommune/oslokommune-boundary"
-  iamManagedPolicies:
-    - 'arn:aws:iam::#{AWS::AccountId}:policy/pipeline_component_policy'
-    - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
+  logRetentionInDays: 90
+  iam:
+    role:
+      permissionsBoundary: "arn:aws:iam::${aws:accountId}:policy/oslokommune/oslokommune-boundary"
+      managedPolicies:
+        - 'arn:aws:iam::${aws:accountId}:policy/pipeline_component_policy'
+        - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
   tags:
     GIT_REV: ${git:branch}:${git:sha1}
     VERSION: ${self:custom.version}
@@ -30,11 +33,11 @@ provider:
     VERSION: ${self:custom.version}
     OKDATA_ENVIRONMENT: ${self:custom.okdataEnvironment.${self:provider.stage}, self:custom.okdataEnvironment.dev}
     OKDATA_CLIENT_ID: ${self:service}
-    OKDATA_CLIENT_SECRET: ${ssm:/dataplatform/${self:service}/keycloak-client-secret~true}
+    OKDATA_CLIENT_SECRET: ${ssm:/dataplatform/${self:service}/keycloak-client-secret}
+
 package:
-  exclude:
-    - '**/*'
-  include:
+  patterns:
+    - '!**/*'
     - okdata/**/*.py
 
 functions:
@@ -59,7 +62,7 @@ functions:
 plugins:
   - serverless-es-logs
   - serverless-plugin-git-variables
-  - serverless-pseudo-parameters
+  - serverless-prune-plugin
   - serverless-python-requirements
 
 resources:
@@ -84,6 +87,9 @@ custom:
     endpoint: ${ssm:/dataplatform/shared/logs-elasticsearch-endpoint}
     index: dataplatform-services
     filterPattern: '{ $.function_name = "*" }'
+  prune:
+    automatic: true
+    number: 3
   exportGitVariables: false
   deploymentBucket:
     prod: ok-origo-dataplatform-config-prod
