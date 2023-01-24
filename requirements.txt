@@ -26,7 +26,7 @@ fastparquet==0.5.0
     # via okdata-pipeline (setup.py)
 fsspec==2021.4.0
     # via s3fs
-future==0.18.2
+future==0.18.3
     # via aws-xray-sdk
 idna==2.10
     # via requests
