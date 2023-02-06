@@ -23,7 +23,6 @@ from okdata.sdk.data.dataset import Dataset
 def test_copy_to_processed_ok(
     mock_s3_service_ok, mock_dataset_create_distribution_ok, mock_status, mocker
 ):
-
     mocker.spy(S3Service, "copy")
     mocker.spy(Dataset, "create_distribution")
     lambda_event = test_data.copy_event("processed")
@@ -79,7 +78,6 @@ def test_copy_to_processed_ok_without_content_type(
 def test_copy_to_cleaned_ok(
     mock_s3_service_ok, mock_dataset_create_distribution_ok, mock_status, mocker
 ):
-
     mocker.spy(S3Service, "copy")
     mocker.spy(Dataset, "create_distribution")
 

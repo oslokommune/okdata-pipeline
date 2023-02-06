@@ -12,7 +12,6 @@ class S3Service:
     client = boto3.client("s3")
 
     def __init__(self):
-
         self.client = boto3.client("s3")
         log_add(s3_bucket=self.bucket)
 
