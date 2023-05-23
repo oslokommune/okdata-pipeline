@@ -78,7 +78,7 @@ python-keycloak==0.24.0
     # via okdata-sdk
 pytz==2021.1
     # via pandas
-requests==2.25.1
+requests==2.31.0
     # via
     #   okdata-aws
     #   okdata-pipeline (setup.py)
