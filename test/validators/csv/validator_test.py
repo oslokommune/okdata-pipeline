@@ -17,13 +17,13 @@ bucket = os.environ["BUCKET_NAME"]
 
 def test_config():
     c = StepConfig('{"hello":"ok"}', False, ";", "'")
-    assert type(c.schema) == dict
+    assert isinstance(c.schema, dict)
 
 
 def test_config_from_event(event):
     task_config = event["payload"]["pipeline"]["task_config"]["validate_input"]
     c = StepConfig.from_task_config(task_config)
-    assert type(c.schema) == dict
+    assert isinstance(c.schema, dict)
     assert c.schema == json.loads(task_config["schema"])
 
 
