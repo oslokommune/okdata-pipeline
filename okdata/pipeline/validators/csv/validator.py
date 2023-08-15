@@ -35,7 +35,7 @@ class StepConfig:
         self.header_row = header_row
         self.delimiter = delimiter
         self.quote = quote
-        if type(schema) == str and schema != "":
+        if isinstance(schema, str) and schema != "":
             self.schema = json.loads(schema)
         else:
             self.schema = schema
