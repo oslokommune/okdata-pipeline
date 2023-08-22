@@ -23,7 +23,6 @@ provider:
     GIT_REV: ${git:branch}:${git:sha1}
     VERSION: ${self:custom.version}
   environment:
-    AUTHORIZER_API: ${ssm:/dataplatform/shared/api-gateway-url}/simple-dataset-authorizer
     BUCKET_NAME: ok-origo-dataplatform-${self:provider.stage}
     GIT_REV: ${git:branch}:${git:sha1}
     KEYCLOAK_SERVER: ${ssm:/dataplatform/shared/keycloak-server-url}
