@@ -37,6 +37,16 @@ For tests and linting we use [pytest](https://pypi.org/project/pytest/),
 
 ## Deploy
 
-Deploy to both dev and prod is automatic via GitHub Actions on push to
-`master`. You can alternatively deploy from local machine (requires `saml2aws`)
-with: `make deploy` or `make deploy-prod`.
+Deploy to both dev and prod is automatic via GitHub Actions on push to `main`.
+
+You can also deploy from a local machine to dev with:
+
+```sh
+make deploy
+```
+
+Or to prod with:
+
+```sh
+make deploy-prod
+```
