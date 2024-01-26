@@ -3,7 +3,6 @@ import csv
 
 
 class TableWriter(object):
-
     """
     The TableWriter is responsible for writing a Pandas DataFrame to a
     CSV file. It can optionally compress the output file using gzip.

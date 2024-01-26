@@ -1,5 +1,4 @@
 class TableConfig(object):
-
     """
     The TableConfig contains the information needed to extract data
     from an Excel file to build a table.
@@ -51,7 +50,6 @@ class TableConfig(object):
 
 
 class TableSource(object):
-
     """
     The TableSource represents the location of a single source sub-table
     in the Excel file.
@@ -99,7 +97,6 @@ class TableSource(object):
 
 
 class ExtraCol(object):
-
     """
     Represents the configuration of the optional extra column;
     name and data type.

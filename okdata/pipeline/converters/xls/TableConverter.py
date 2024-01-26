@@ -5,7 +5,6 @@ from okdata.pipeline.converters.xls.TableConfig import TableConfig
 
 
 class TableConverter(object):
-
     """
     The TableConverter contains functionality to read an Excel file
     and convert this to a Pandas DataFrame, based on the TableConfig
