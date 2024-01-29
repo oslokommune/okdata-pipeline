@@ -43,8 +43,9 @@ setuptools.setup(
         # Transitive dependency, lock to Lambda runtime version
         "six==1.16.0",
         # Transitive dependency, lock to Lambda runtime version
-        "urllib3==1.26.11",
+        "urllib3==1.26.15",
         # Newer versions drop support for newer Excel files (.xlsx)
         "xlrd<2.0",
     ],
+    python_requires="==3.9.*",
 )
