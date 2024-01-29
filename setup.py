@@ -22,6 +22,7 @@ setuptools.setup(
     install_requires=[
         "aws-xray-sdk",
         "boto3",
+        "deltalake",
         "fastparquet",
         "jsonschema",
         "okdata-aws>=0.4.1",

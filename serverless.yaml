@@ -36,6 +36,7 @@ provider:
     OKDATA_ENVIRONMENT: ${self:custom.okdataEnvironment.${self:provider.stage}, self:custom.okdataEnvironment.dev}
     OKDATA_CLIENT_ID: ${self:service}
     OKDATA_CLIENT_SECRET: ${ssm:/dataplatform/${self:service}/keycloak-client-secret}
+    AWS_S3_ALLOW_UNSAFE_RENAME: true
 
 package:
   patterns:
@@ -50,6 +51,11 @@ functions:
         - okdata.pipeline.converters.csv.handler.csv_to_parquet
     memorySize: 10240
     timeout: 900
+  csv-to-delta:
+    image:
+      name: okdata-pipeline
+      command:
+        - okdata.pipeline.converters.csv.handler.csv_to_delta
   invoke-lambda:
     image:
       name: okdata-pipeline
