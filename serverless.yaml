@@ -82,6 +82,14 @@ custom:
       - '**/__pycache__*'
       - 'fastparquet/test'
     usePoetry: false
+    noDeploy:
+      - boto3
+      - botocore
+      - jmespath
+      - python-dateutil
+      - s3transfer
+      - six
+      - urllib3
   prune:
     automatic: true
     number: 3

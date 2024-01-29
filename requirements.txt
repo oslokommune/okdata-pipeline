@@ -8,12 +8,13 @@ attrs==21.1.0
     # via jsonschema
 aws-xray-sdk==2.8.0
     # via okdata-pipeline (setup.py)
-boto3==1.17.67
+boto3==1.26.90
     # via okdata-pipeline (setup.py)
-botocore==1.20.67
+botocore==1.29.90
     # via
     #   aws-xray-sdk
     #   boto3
+    #   okdata-pipeline (setup.py)
     #   s3fs
     #   s3transfer
 certifi==2023.7.22
@@ -30,10 +31,11 @@ future==0.18.3
     # via aws-xray-sdk
 idna==2.10
     # via requests
-jmespath==0.10.0
+jmespath==1.0.1
     # via
     #   boto3
     #   botocore
+    #   okdata-pipeline (setup.py)
 jsonschema==3.2.0
     # via
     #   okdata-pipeline (setup.py)
@@ -67,7 +69,7 @@ pyjwt==2.4.0
     # via okdata-sdk
 pyrsistent==0.17.3
     # via jsonschema
-python-dateutil==2.8.1
+python-dateutil==2.8.2
     # via
     #   botocore
     #   okdata-pipeline (setup.py)
@@ -88,12 +90,15 @@ rsa==4.7.2
     # via python-jose
 s3fs==0.4.2
     # via okdata-pipeline (setup.py)
-s3transfer==0.4.2
-    # via boto3
+s3transfer==0.6.0
+    # via
+    #   boto3
+    #   okdata-pipeline (setup.py)
 six==1.16.0
     # via
     #   ecdsa
     #   jsonschema
+    #   okdata-pipeline (setup.py)
     #   python-dateutil
     #   python-jose
     #   thrift
@@ -103,9 +108,10 @@ thrift==0.13.0
     # via fastparquet
 typing-extensions==3.10.0.0
     # via pydantic
-urllib3==1.26.18
+urllib3==1.26.11
     # via
     #   botocore
+    #   okdata-pipeline (setup.py)
     #   requests
 wrapt==1.12.1
     # via aws-xray-sdk
