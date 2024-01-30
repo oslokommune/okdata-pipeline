@@ -89,7 +89,6 @@ custom:
       - python-dateutil
       - s3transfer
       - six
-      - urllib3
   prune:
     automatic: true
     number: 3

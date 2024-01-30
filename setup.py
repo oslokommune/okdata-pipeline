@@ -42,8 +42,8 @@ setuptools.setup(
         "s3transfer==0.6.0",
         # Transitive dependency, lock to Lambda runtime version
         "six==1.16.0",
-        # Transitive dependency, lock to Lambda runtime version
-        "urllib3==1.26.15",
+        # Lambda runtime has a vulnerable version; ship our own
+        "urllib3>=1.26.18",
         # Newer versions drop support for newer Excel files (.xlsx)
         "xlrd<2.0",
     ],
