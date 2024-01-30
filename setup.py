@@ -30,7 +30,7 @@ setuptools.setup(
         "jmespath==1.0.1",
         "jsonschema",
         "okdata-aws>=0.4.1",
-        "okdata-sdk>=0.8.1",
+        "okdata-sdk>=2.1.0",
         "pandas",
         # Lock to Lambda runtime version
         "python-dateutil==2.8.2",
