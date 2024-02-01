@@ -3,8 +3,8 @@ import sys
 import unittest
 from copy import copy
 
+import openpyxl
 import pandas as pd
-import xlrd
 
 from okdata.pipeline.converters.xls.TableConfig import TableConfig
 from okdata.pipeline.converters.xls.TableConverter import TableConverter
@@ -87,19 +87,19 @@ class Tester(unittest.TestCase):
         conv = TableConverter(config)
         wb = conv.read_excel_table(os.path.join(CWD, "data", "simple.xlsx"))
 
-        self.assertEqual(type(wb), xlrd.book.Book)
+        assert isinstance(wb, openpyxl.Workbook)
 
     def test_read_wrong_sheet_name(self):
         conv = TableConverter(wrong_sheet_name_config)
         wb = conv.read_excel_table(os.path.join(CWD, "data", "simple.xlsx"))
 
         with self.assertRaises(ValueError):
-            conv.extract_sub_table(wb, wrong_sheet_name_config.table_sources[0])
+            conv._extract_sub_table(wb, wrong_sheet_name_config.table_sources[0])
 
     def test_read_wo_header(self):
         conv = TableConverter(no_header_config)
         wb = conv.read_excel_table(os.path.join(CWD, "data", "simple.xlsx"))
-        df = conv.extract_sub_table(wb, no_header_config.table_sources[0])
+        df = conv._extract_sub_table(wb, no_header_config.table_sources[0])
 
         self.assertEqual(type(df), pd.DataFrame)
         self.assertEqual(list(df.columns), ["A_specified", "B_specified"])
@@ -110,7 +110,7 @@ class Tester(unittest.TestCase):
     def test_extract_sub_table(self):
         conv = TableConverter(config)
         wb = conv.read_excel_table(os.path.join(CWD, "data", "simple.xlsx"))
-        df = conv.extract_sub_table(wb, config.table_sources[0])
+        df = conv._extract_sub_table(wb, config.table_sources[0])
 
         self.assertEqual(type(df), pd.DataFrame)
         self.assertEqual(list(df.columns), ["A", "B"])
@@ -125,7 +125,7 @@ class Tester(unittest.TestCase):
 
         wb = conv.read_excel_table(os.path.join(CWD, "data", "simple.xlsx"))
         with self.assertRaises(ValueError):
-            conv.extract_sub_table(wb, config.table_sources[0])
+            conv._extract_sub_table(wb, config.table_sources[0])
 
     def test_convert_with_empty_config(self):
         conv = TableConverter(empty_config)

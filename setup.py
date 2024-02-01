@@ -31,6 +31,7 @@ setuptools.setup(
         "jsonschema",
         "okdata-aws>=0.4.1",
         "okdata-sdk>=2.1.0",
+        "openpyxl",
         "pandas",
         # Lock to Lambda runtime version
         "python-dateutil==2.8.2",
@@ -44,8 +45,6 @@ setuptools.setup(
         "six==1.16.0",
         # Lambda runtime has a vulnerable version; ship our own
         "urllib3>=1.26.18",
-        # Newer versions drop support for newer Excel files (.xlsx)
-        "xlrd<2.0",
     ],
     python_requires="==3.9.*",
 )

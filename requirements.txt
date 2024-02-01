@@ -23,6 +23,8 @@ charset-normalizer==3.3.2
     # via requests
 ecdsa==0.14.1
     # via python-jose
+et-xmlfile==1.1.0
+    # via openpyxl
 fastparquet==0.5.0
     # via okdata-pipeline (setup.py)
 fsspec==2021.4.0
@@ -55,6 +57,8 @@ okdata-sdk==3.1.0
     # via
     #   okdata-aws
     #   okdata-pipeline (setup.py)
+openpyxl==3.1.2
+    # via okdata-pipeline (setup.py)
 pandas==1.2.4
     # via
     #   fastparquet
@@ -118,8 +122,6 @@ urllib3==1.26.18
     #   requests
 wrapt==1.12.1
     # via aws-xray-sdk
-xlrd==1.2.0
-    # via okdata-pipeline (setup.py)
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

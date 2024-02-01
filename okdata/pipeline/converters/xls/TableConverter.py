@@ -1,61 +1,38 @@
+import os
+
+import openpyxl
 import pandas as pd
-import xlrd
 
 from okdata.pipeline.converters.xls.TableConfig import TableConfig
 
 
-class TableConverter(object):
-    """
-    The TableConverter contains functionality to read an Excel file
-    and convert this to a Pandas DataFrame, based on the TableConfig
-    configuration.
-    """
+class TableConverter:
+    """Functions to read an XLSX file and convert it to a Pandas DataFrame."""
 
     def __init__(self, config):
-        """
-        Configures the TableConverter.
-
-        Args:
-            config (TableConfig): The table conversion configuration.
-        """
-        if not type(config) is TableConfig:
+        if not isinstance(config, TableConfig):
             raise TypeError("config must be of type TableConfig")
 
         self.config = config
 
-    def read_excel_table(self, source_file):
-        """
-        Reads an Excel file from the file system.
+    @staticmethod
+    def read_excel_table(source_file):
+        """Load an XLSX file from the file system and return a workbook."""
 
-        Args:
-            source_file (str): File path to the Excel file.
-
-        Returns:
-            The xlrd workbook.
-        """
-        if not type(source_file) is str:
+        if not isinstance(source_file, str):
             raise TypeError("source_file must be a string")
 
-        if not (
-            source_file.lower()[-5:] == ".xlsx" or source_file.lower()[-4:] == ".xls"
-        ):
-            raise ValueError(
-                "source_file must end in .xlsx or .xls: {filename}".format(
-                    filename=source_file
-                )
-            )
+        if not os.path.splitext(source_file)[1] == ".xlsx":
+            raise ValueError(f"source_file must end in .xlsx: {source_file}")
 
-        return xlrd.open_workbook(source_file)
+        return openpyxl.load_workbook(source_file)
 
     def convert_table(self, wb):
-        """
-        Converts an xlrd workbook to a Pandas DataFrame based on the
-        table conversion configuration. If the configuration contains
-        multiple sub-table data sources, it will concatenate them
-        together into a single DataFrame.
+        """Convert an openpyxl workbook to a Pandas DataFrame.
 
-        Args:
-            wb (xlrd.book.Book): The xlrd workbook
+        The conversion is based on the table conversion configuration. If the
+        configuration contains multiple sub-table data sources, it will
+        concatenate them together into a single DataFrame.
         """
         df = None
 
@@ -66,23 +43,17 @@ class TableConverter(object):
             )
 
         for ts in self.config.table_sources:
-            df_ts = self.extract_sub_table(wb, ts)
-
-            if df is None:
-                df = df_ts.copy()
-            else:
-                df = pd.concat((df, df_ts))
+            df_ts = self._extract_sub_table(wb, ts)
+            df = df_ts.copy() if df is None else pd.concat((df, df_ts))
 
         return df
 
-    def extract_sub_table(self, wb, table_source):
-        """
-        Internal method to etract one sub-table based on the table source
-        configuration.
+    def _extract_sub_table(self, wb, table_source):
+        """Extract a sub-table based on the table source configuration.
 
-        If the table conversion configuration defines an extra column, it
-        will add this to the DataFrame and populate it using the defined
-        extra data cell.
+        If the table conversion configuration defines an extra column, it will
+        add this to the DataFrame and populate it using the defined extra data
+        cell.
         """
         start_row = table_source.start_row - 1
         start_col = table_source.start_col - 1
@@ -91,7 +62,7 @@ class TableConverter(object):
 
         if self.config.column_names:
             num_columns = len(self.config.column_names)
-            cols = list(range(start_col, start_col + num_columns))
+            cols = range(start_col, start_col + num_columns)
         else:
             cols = None
 
@@ -102,19 +73,15 @@ class TableConverter(object):
         else:
             names_arg = self.config.column_names
 
-        try:
-            df = pd.read_excel(
-                io=wb,
-                sheet_name=self.config.sheet_name,
-                engine="xlrd",
-                header=header_arg,
-                names=names_arg,
-                usecols=cols,
-                skiprows=start_row,
-            )
-
-        except xlrd.biffh.XLRDError as e:
-            raise OSError(e)
+        df = pd.read_excel(
+            io=wb,
+            sheet_name=self.config.sheet_name,
+            engine="openpyxl",
+            header=header_arg,
+            names=names_arg,
+            usecols=cols,
+            skiprows=start_row,
+        )
 
         if self.config.table_has_header:
             self.check_column_names(df)
@@ -123,57 +90,54 @@ class TableConverter(object):
             df = self.pivot_table(df)
 
         if self.config.extra_col:
-            sheet = wb.sheet_by_name(self.config.sheet_name)
-            value = sheet.cell(
-                table_source.extra_row - 1, table_source.extra_col - 1
-            ).value
-            value = self.to_dtype(value)
+            sheet = wb[self.config.sheet_name]
+            value = sheet.cell(table_source.extra_row, table_source.extra_col).value
+            value = self._to_dtype(value)
             df[self.config.extra_col.name] = value
 
         return self.filter_empty_rows(df)
 
-    def to_dtype(self, value):
-        """
-        Internal method to convert the cell value to the defined data type.
-        """
+    def _to_dtype(self, value):
+        """Convert cell value `value` to a defined data type."""
+
         if self.config.extra_col.dtype is str:
             return str(value)
         elif self.config.extra_col.dtype is int:
             return int(value)
         elif self.config.extra_col.dtype is float:
             return float(value)
-        else:
-            raise TypeError("Extra column type is not str, int or float")
+        raise TypeError("Extra column type is not str, int or float")
 
     def check_column_names(self, df):
-        """
-        Checks whether a Pandas DataFrame matches the configured columns.
+        """Check whether a Pandas DataFrame matches the configured columns.
+
+        Raise `ValueError` if not.
         """
         if self.config.column_names and not (
             list(df.columns) == self.config.column_names
         ):
-            error_string = "Expected header did not match actual.\n"
-            error_string += "Expected: " + str(self.config.column_names) + "\n"
-            error_string += "Actual: " + str(list(df.columns))
-            raise ValueError(error_string)
+            error_lines = [
+                "Expected header did not match actual.",
+                f"Expected: {self.config.column_names}",
+                f"Actual: {list(df.columns)}",
+            ]
+            raise ValueError("\n".join(error_lines))
 
     def filter_empty_rows(self, df):
-        """
-        Filter away rows which do not have any content (this will happen
-        if the bottom of the table is above the bottom of the sheet.)
-        """
+        """Filter away empty rows.
 
+        This will happen if the bottom of the table is above the bottom of the
+        sheet.
+        """
         if self.config.column_names:
             return df[df[self.config.column_names[0]].notna()]
-        else:
-            return df
+
+        return df
 
     def pivot_table(self, df):
         pivot_column = self.config.pivot_config.pivot_column
         value_column = self.config.pivot_config.value_column
-        key_columns = list(
-            filter(lambda x: x not in [pivot_column, value_column], list(df))
-        )
+        key_columns = [x for x in df if x not in [pivot_column, value_column]]
         df_pivot = pd.pivot_table(
             df,
             index=key_columns,
