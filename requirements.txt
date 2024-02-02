@@ -51,7 +51,7 @@ numpy==1.22.4
     #   pandas
 okdata-aws==0.4.1
     # via okdata-pipeline (setup.py)
-okdata-sdk==0.9.1
+okdata-sdk==3.1.0
     # via
     #   okdata-aws
     #   okdata-pipeline (setup.py)
@@ -75,7 +75,9 @@ python-dateutil==2.8.2
     #   okdata-pipeline (setup.py)
     #   pandas
 python-jose==3.2.0
-    # via python-keycloak
+    # via
+    #   okdata-sdk
+    #   python-keycloak
 python-keycloak==0.24.0
     # via okdata-sdk
 pytz==2021.1
@@ -112,6 +114,7 @@ urllib3==1.26.18
     # via
     #   botocore
     #   okdata-pipeline (setup.py)
+    #   okdata-sdk
     #   requests
 wrapt==1.12.1
     # via aws-xray-sdk
