@@ -6,6 +6,8 @@ edition = "20200120T133701"
 
 file_name_1 = "file1.json"
 file_name_2 = "file2.json"
+# Test that S3 "directories" are preserved when files are copied
+file_name_3 = "subdir/file3.json"
 
 s3_input_prefix = f"raw/green/{dataset_id}/version={version}/edition={edition}/"
 s3_output_prefix_processed = (
@@ -18,7 +20,7 @@ s3_output_prefix_processed_latest = (
     f"processed/green/{dataset_id}/version={version}/latest/"
 )
 
-filenames = [file_name_1, file_name_2]
+filenames = [file_name_1, file_name_2, file_name_3]
 
 s3_sources = [
     S3Source(
@@ -28,6 +30,10 @@ s3_sources = [
     S3Source(
         filename=file_name_2,
         key=f"{s3_input_prefix}{file_name_2}",
+    ),
+    S3Source(
+        filename=file_name_3,
+        key=f"{s3_input_prefix}{file_name_3}",
     ),
 ]
 

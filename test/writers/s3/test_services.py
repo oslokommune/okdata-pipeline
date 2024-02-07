@@ -8,10 +8,12 @@ from test.util import mock_aws_s3_client
 
 file_content_1 = "nfjanfdafmkadmfa"
 file_content_2 = "djnfjandjfnsekjg"
+file_content_3 = "dmlybyhgunoumzas"
 
 test_files = [
     {"filename": test_data.file_name_1, "content": file_content_1.encode("utf-8")},
     {"filename": test_data.file_name_2, "content": file_content_2.encode("utf-8")},
+    {"filename": test_data.file_name_3, "content": file_content_3.encode("utf-8")},
 ]
 
 
@@ -19,7 +21,7 @@ def test_copy(mock_aws):
     s3_service = S3Service()
     s3_service.copy(test_data.s3_sources, test_data.s3_output_prefix_processed)
     object_list = s3_service.list_objects_contents(test_data.s3_output_prefix_processed)
-    assert len(object_list) == 2
+    assert len(object_list) == 3
     copied_file_content = [
         s3_service.client.get_object(Bucket=S3Service.bucket, Key=copied_obj["Key"])[
             "Body"
@@ -28,7 +30,7 @@ def test_copy(mock_aws):
         .decode("utf-8")
         for copied_obj in object_list
     ]
-    assert copied_file_content == [file_content_1, file_content_2]
+    assert copied_file_content == [file_content_1, file_content_2, file_content_3]
 
 
 def test_copy_raises_incomplete_transaction(mock_aws, mocker):
