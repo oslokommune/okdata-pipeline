@@ -21,30 +21,18 @@ setuptools.setup(
     namespace_packages=["okdata"],
     install_requires=[
         "aws-xray-sdk",
-        # Lock to Lambda runtime version
-        "boto3==1.26.90",
-        # Transitive dependency, lock to Lambda runtime version
-        "botocore==1.29.90",
+        "boto3",
         "fastparquet",
-        # Transitive dependency, lock to Lambda runtime version
-        "jmespath==1.0.1",
         "jsonschema",
         "okdata-aws>=0.4.1",
         "okdata-sdk>=2.1.0",
         "openpyxl",
         "pandas",
-        # Lock to Lambda runtime version
-        "python-dateutil==2.8.2",
+        "python-dateutil",
         "requests",
         # Newer versions of s3fs cause dependency resolution issues:
         # https://github.com/dask/s3fs/issues/357
         "s3fs<=0.4.2",
-        # Transitive dependency, lock to Lambda runtime version
-        "s3transfer==0.6.0",
-        # Transitive dependency, lock to Lambda runtime version
-        "six==1.16.0",
-        # Lambda runtime has a vulnerable version; ship our own
-        "urllib3>=1.26.18",
     ],
     python_requires="==3.9.*",
 )

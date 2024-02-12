@@ -14,7 +14,6 @@ botocore==1.29.90
     # via
     #   aws-xray-sdk
     #   boto3
-    #   okdata-pipeline (setup.py)
     #   s3fs
     #   s3transfer
 certifi==2023.7.22
@@ -37,7 +36,6 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-    #   okdata-pipeline (setup.py)
 jsonschema==3.2.0
     # via
     #   okdata-pipeline (setup.py)
@@ -97,14 +95,11 @@ rsa==4.7.2
 s3fs==0.4.2
     # via okdata-pipeline (setup.py)
 s3transfer==0.6.0
-    # via
-    #   boto3
-    #   okdata-pipeline (setup.py)
+    # via boto3
 six==1.16.0
     # via
     #   ecdsa
     #   jsonschema
-    #   okdata-pipeline (setup.py)
     #   python-dateutil
     #   python-jose
     #   thrift
@@ -117,7 +112,6 @@ typing-extensions==3.10.0.0
 urllib3==1.26.18
     # via
     #   botocore
-    #   okdata-pipeline (setup.py)
     #   okdata-sdk
     #   requests
 wrapt==1.12.1
