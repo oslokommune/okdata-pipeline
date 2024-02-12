@@ -63,7 +63,7 @@ class S3Service:
 
         for obj in source_objects:
             source_key = obj["Key"]
-            filename = source_key.split("/")[-1]
+            filename = source_key.removeprefix(source_prefix)
             s3_sources.append(S3Source(filename=filename, key=source_key))
 
         return s3_sources
