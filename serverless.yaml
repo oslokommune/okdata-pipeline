@@ -4,7 +4,10 @@ service: okdata-pipeline
 
 provider:
   name: aws
-  runtime: python3.9
+  ecr:
+    images:
+      okdata-pipeline:
+        path: ./
   region: ${opt:region, 'eu-west-1'}
   stage: ${opt:stage, 'dev'}
   timeout: 60
@@ -41,28 +44,45 @@ package:
 
 functions:
   csv-to-parquet:
-    handler: okdata.pipeline.converters.csv.handler.csv_to_parquet
+    image:
+      name: okdata-pipeline
+      command:
+        - okdata.pipeline.converters.csv.handler.csv_to_parquet
     memorySize: 10240
     timeout: 900
   invoke-lambda:
-    handler: okdata.pipeline.lambda_invoker.invoke_lambda
+    image:
+      name: okdata-pipeline
+      command:
+        - okdata.pipeline.lambda_invoker.invoke_lambda
   validate-csv:
-    handler: okdata.pipeline.validators.csv.validator.validate_csv
+    image:
+      name: okdata-pipeline
+      command:
+        - okdata.pipeline.validators.csv.validator.validate_csv
   validate-json:
-    handler: okdata.pipeline.validators.json.handler.validate_json
+    image:
+      name: okdata-pipeline
+      command:
+        - okdata.pipeline.validators.json.handler.validate_json
   write-s3:
-    handler: okdata.pipeline.writers.s3.handlers.write_s3
+    image:
+      name: okdata-pipeline
+      command:
+        - okdata.pipeline.writers.s3.handlers.write_s3
     timeout: 900
     tracing: Active
   xls-to-csv:
-    handler: okdata.pipeline.converters.xls.main.xls_to_csv
+    image:
+      name: okdata-pipeline
+      command:
+        - okdata.pipeline.converters.xls.main.xls_to_csv
     timeout: 120
 
 plugins:
   - serverless-better-credentials # must be first
   - serverless-plugin-git-variables
   - serverless-prune-plugin
-  - serverless-python-requirements
 
 resources:
   Description: |
@@ -71,24 +91,6 @@ resources:
 
 custom:
   version: 0.1.0
-  pythonRequirements:
-    dockerizePip: non-linux
-    useDownloadCache: false
-    useStaticCache: false
-    slim: true
-    slimPatternsAppendDefaults: false
-    slimPatterns:
-      - '**/*.py[c|o]'
-      - '**/__pycache__*'
-      - 'fastparquet/test'
-    usePoetry: false
-    noDeploy:
-      - boto3
-      - botocore
-      - jmespath
-      - python-dateutil
-      - s3transfer
-      - six
   prune:
     automatic: true
     number: 3
