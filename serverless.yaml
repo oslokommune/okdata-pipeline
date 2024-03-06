@@ -8,6 +8,7 @@ provider:
     images:
       okdata-pipeline:
         path: ./
+        platform: linux/amd64
   region: ${opt:region, 'eu-west-1'}
   stage: ${opt:stage, 'dev'}
   timeout: 60
