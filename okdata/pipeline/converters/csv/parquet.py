@@ -1,6 +1,7 @@
 from dataclasses import asdict
 from multiprocessing import Pipe, Process, connection
 
+import awswrangler as wr
 from pandas.errors import OutOfBoundsDatetime
 
 from okdata.aws.logging import log_add
@@ -26,16 +27,18 @@ class ParquetExporter(Exporter):
 
     @staticmethod
     def _export(source, schema, out_prefix, part=None, connection=None):
-        df = Exporter.set_date_columns_on_dataframe(source, schema)
+        if schema:
+            source = Exporter.set_date_columns_on_dataframe(source, schema)
+        else:
+            source = source.apply(Exporter.infer_column_dtype_from_input)
+
         outfile = "{}.{}parquet.gz".format(out_prefix, f"part.{part}." if part else "")
-        df.to_parquet(
-            outfile,
-            engine="fastparquet",
-            compression="gzip",
-            times="int96",
-        )
+
+        wr.s3.to_parquet(source, outfile, compression="gzip")
+
         if connection:
             connection.send(outfile)
+
         return outfile
 
     def _parallel_export(self, filename, source, schema, out_prefix):

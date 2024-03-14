@@ -11,8 +11,13 @@ from okdata.pipeline.converters.csv.base import BUCKET, Exporter
 class DeltaExporter(Exporter):
     @staticmethod
     def _export(source, schema, out_prefix):
-        df = Exporter.set_date_columns_on_dataframe(source, schema)
-        write_deltalake(out_prefix, df)
+        if schema:
+            source = Exporter.set_date_columns_on_dataframe(source, schema)
+        else:
+            source = source.apply(Exporter.infer_column_dtype_from_input)
+
+        write_deltalake(out_prefix, source)
+
         return out_prefix
 
     def export(self):

@@ -2,6 +2,7 @@ import os
 import re
 from dataclasses import asdict, dataclass
 
+import awswrangler as wr
 import boto3
 import pandas as pd
 
@@ -11,10 +12,10 @@ from okdata.pipeline.models import Config
 
 BUCKET = os.environ["BUCKET_NAME"]
 JSONSCHEMA_TO_DTYPE_MAP = {
-    "string": "object",
-    "integer": "float64",
-    "boolean": "bool",
-    "number": "float64",
+    "string": "string[pyarrow]",
+    "integer": "int64[pyarrow]",
+    "boolean": "bool[pyarrow]",
+    "number": "float64[pyarrow]",
 }
 DATE_FORMATS = ["date-time", "date", "year"]
 DATE_FORMATS_INPUT_FORMAT = {
@@ -40,77 +41,73 @@ class Exporter:
         return self.s3.list_objects_v2(Bucket=BUCKET, Prefix=input_prefix)["Contents"]
 
     @staticmethod
-    def _read_csv_data(s3_key, delimiter, chunksize, dtype, date_columns=None):
-        kwargs = {}
-        if chunksize is not None:
-            kwargs["chunksize"] = chunksize
-        if dtype is not None:
-            kwargs["dtype"] = dtype
-        if date_columns is not None:
-            kwargs["parse_dates"] = date_columns
+    def _read_csv_data(s3_key, schema, delimiter, chunksize):
+        # Note: awswrangler does not seem to pass the Pandas `delimiter`
+        # parameter alias for `sep` to `pandas_kwargs`. When the latter is set
+        # to `None`, Pandas automatically attempts to detect the separator
+        # using Python’s builtin sniffer tool, csv.Sniffer.
 
         try:
-            if s3_key.endswith(".gz"):
-                df = pd.read_csv(
-                    s3_key, compression="gzip", delimiter=delimiter, **kwargs
-                )
-            else:
-                df = pd.read_csv(s3_key, delimiter=delimiter, **kwargs)
+            df = wr.s3.read_csv(
+                path=s3_key,
+                compression="gzip" if s3_key.endswith(".gz") else "infer",
+                sep=delimiter,
+                chunksize=chunksize if chunksize else None,
+                dtype=Exporter.get_dtype(schema),
+                dtype_backend="pyarrow",
+                engine="python",
+            )
         except ValueError as ve:
             raise ConversionError(str(ve)) from ve
+
         return df
 
     @staticmethod
-    def jsonschema_to_dtypes(schema):
-        if schema is None:
+    def infer_column_dtype_from_input(col):
+        # Check for date(time) type.
+        if col.dtypes.pyarrow_dtype == "string":
+            try:
+                return pd.to_datetime(col, format="ISO8601")
+            except ValueError:
+                # Ignore errors and keep string type.
+                pass
+
+        # Default to string type for column with missing values.
+        if col.dtypes.pyarrow_dtype == "null":
+            return col.astype(pd.StringDtype("pyarrow"))
+
+        return col
+
+    @staticmethod
+    def get_dtype(schema):
+        """
+        Identify datatypes to apply to individual dataset columns based on
+        provided `schema`.
+        """
+
+        if not schema:
+            log_add(dtype=None, dtype_source="inferred")
             return None
-        return {
+
+        dtype = {
             name: JSONSCHEMA_TO_DTYPE_MAP[prop["type"]]
             for name, prop in schema["properties"].items()
         }
-
-    @staticmethod
-    def get_dtype_from_input(input):
-        """
-        Get a dtype dict of the input file based on the first line
-        in the file. We set each column to dtype=object (see: https://pbpython.com/pandas_dtypes.html)
-
-        This is done to prevent exceptions thrown from reading data when there are N/A values
-        that we don't know before we are reading the user-supplied file AND we don't have
-        a user-supplied schema for the current file
-        """
-        line = pd.read_csv(input, compression="infer", chunksize=1)
-        ret = {}
-        columns = line.get_chunk(0).columns
-        for column in columns:
-            ret[column] = "object"
-        return ret
-
-    @staticmethod
-    def get_dtype(schema, input):
-        """
-        Try to resolve the dtype for the columns for reading csv file
-        Resolve dtype from the taskConfig.TASK_NAME.schema, if this is
-        not available we read the first line (column headers) for the file that is about
-        to be read in by pandas, and set each column to be of type object (default)
-        """
-        log_add(dtype_source="jsonschema")
-        dtype = Exporter.jsonschema_to_dtypes(schema)
-        if dtype is None:
-            log_add(dtype_source=f"input:{input}")
-            dtype = Exporter.get_dtype_from_input(input)
-        log_add(dtype=dtype)
+        log_add(dtype=dtype, dtype_source="jsonschema")
         return dtype
 
     @staticmethod
     def get_date_columns(schema):
         if not schema:
-            return False
-        return [
+            return None
+
+        date_columns = [
             name
             for name, prop in schema["properties"].items()
             if prop["type"] == "string" and prop.get("format") in DATE_FORMATS
         ]
+        log_add(date_columns=date_columns)
+        return date_columns
 
     @staticmethod
     def remove_suffix(str):
@@ -133,15 +130,17 @@ class Exporter:
         see https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#timeseries-timestamp-limits
         for more information on this.
 
-        If content in reader now contains data that is NOT parsable by pandas the to_datetime() will
-        throw a exception and the execution will stop
+        If content in reader now contains data that is NOT parsable by pandas the `to_datetime()`
+        will throw an exception and the execution will stop.
 
-        to_datetime() will also throw ValueError if the date is invalid or not formatted
-        according to the format found in DATE_FORMATS_INPUT_FORMAT
+        `to_datetime()` will also throw `ValueError` if the date is invalid or not formatted
+        according to the format found in `DATE_FORMATS_INPUT_FORMAT`.
         """
         date_columns_convert = Exporter.get_convert_date_columns(schema)
+
         if date_columns_convert is False:
             return df
+
         for column in date_columns_convert:
             if column["format"] not in DATE_FORMATS_INPUT_FORMAT:
                 raise KeyError(
@@ -149,24 +148,38 @@ class Exporter:
                     could not find input format for it """
                 )
 
-            format = DATE_FORMATS_INPUT_FORMAT[column["format"]]
-            df[column["name"]] = pd.to_datetime(df[column["name"]], format=format)
+            date_format = DATE_FORMATS_INPUT_FORMAT[column["format"]]
+
+            df[column["name"]] = pd.to_datetime(
+                df[column["name"]],
+                format=date_format,
+                # Allow the format to match anywhere in the target string.
+                exact=False,
+            )
+
         return df
 
     def read_csv(self):
         s3_objects = self._list_s3_objects()
         schema = self.task_config.schema
-        log_add(schema=schema)
-        log_add(s3_keys=[obj["Key"] for obj in s3_objects])
+        delimiter = self.task_config.delimiter
+
+        log_add(
+            schema=schema,
+            delimiter=schema,
+            s3_keys=[obj["Key"] for obj in s3_objects],
+        )
+
         files = []
+
         for s3_object in s3_objects:
             key = self.s3fs_prefix + s3_object["Key"]
-            dtype = Exporter.get_dtype(schema, key)
+
             df = self._read_csv_data(
                 key,
-                delimiter=self.task_config.delimiter,
+                schema=schema,
+                delimiter=delimiter,
                 chunksize=self.task_config.chunksize,
-                dtype=dtype,
             )
             filename = key.split("/")[-1]
             filename = Exporter.remove_suffix(filename)
@@ -184,8 +197,6 @@ class TaskConfig(object):
     def __init__(self, chunksize=None, delimiter=None, schema=None):
         if delimiter == "tab":
             delimiter = "\t"
-        elif delimiter is None:
-            delimiter = ","
         self.chunksize = chunksize
         self.delimiter = delimiter
         self.schema = schema

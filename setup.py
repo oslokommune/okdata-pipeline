@@ -20,20 +20,17 @@ setuptools.setup(
     ),
     namespace_packages=["okdata"],
     install_requires=[
+        "awswrangler",
         "aws-xray-sdk",
         "boto3",
         "deltalake",
-        "fastparquet",
         "jsonschema",
         "okdata-aws>=0.4.1",
         "okdata-sdk>=2.1.0",
         "openpyxl",
-        "pandas",
+        "pandas>2,<3",
         "python-dateutil",
         "requests",
-        # Newer versions of s3fs cause dependency resolution issues:
-        # https://github.com/dask/s3fs/issues/357
-        "s3fs<=0.4.2",
     ],
     python_requires="==3.9.*",
 )
