@@ -1,8 +1,7 @@
 import json
-import os
 
 import pytest
-from moto import mock_s3
+
 from okdata.aws.status.sdk import Status
 
 from okdata.pipeline.validators.csv.validator import (
@@ -10,9 +9,6 @@ from okdata.pipeline.validators.csv.validator import (
     format_errors,
     validate_csv,
 )
-from test.util import mock_aws_s3_client
-
-bucket = os.environ["BUCKET_NAME"]
 
 
 def test_config():
@@ -27,23 +23,20 @@ def test_config_from_event(event):
     assert c.schema == json.loads(task_config["schema"])
 
 
-def _put_s3(event, input_file, gzipped=False):
+def _put_s3(s3_client, bucket, event, input_file, gzipped=False):
     prefix = event["payload"]["step_data"]["s3_input_prefixes"]["boligpriser"]
-    s3_mock = mock_aws_s3_client(bucket)
     key = "{}t.csv{}".format(prefix, ".gz" if gzipped else "")
 
     with open(f"test/validators/csv/data/{input_file}", "rb" if gzipped else "r") as f:
-        s3_mock.put_object(Bucket=bucket, Key=key, Body=f.read())
+        s3_client.put_object(Bucket=bucket, Key=key, Body=f.read())
 
 
-@mock_s3
-def test_csv_validator(event):
-    _put_s3(event, "valid.csv")
+def test_csv_validator(s3_client, s3_bucket, event):
+    _put_s3(s3_client, s3_bucket, event, "valid.csv")
     result = validate_csv(event, {})
     assert len(result["errors"]) == 0
 
 
-@mock_s3
 @pytest.mark.parametrize(
     "input_file",
     [
@@ -52,22 +45,20 @@ def test_csv_validator(event):
         "valid-multibyte.csv.gz",
     ],
 )
-def test_csv_validator_gzip(event, input_file):
-    _put_s3(event, input_file, gzipped=True)
+def test_csv_validator_gzip(s3_client, s3_bucket, event, input_file):
+    _put_s3(s3_client, s3_bucket, event, input_file, gzipped=True)
     result = validate_csv(event, {})
     assert len(result["errors"]) == 0
 
 
-@mock_s3
-def test_csv_validator_empty(event):
-    _put_s3(event, "empty.csv")
+def test_csv_validator_empty(s3_client, s3_bucket, event):
+    _put_s3(s3_client, s3_bucket, event, "empty.csv")
     result = validate_csv(event, {})
     assert len(result["errors"]) == 1
 
 
-@mock_s3
-def test_csv_validator_errors(event, mock_status):
-    _put_s3(event, "invalid.csv")
+def test_csv_validator_errors(s3_client, s3_bucket, event, mock_status):
+    _put_s3(s3_client, s3_bucket, event, "invalid.csv")
     try:
         validate_csv(event, {})
     except Exception as e:
