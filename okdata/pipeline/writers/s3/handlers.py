@@ -2,25 +2,26 @@ import re
 from dataclasses import asdict
 
 from aws_xray_sdk.core import patch_all, xray_recorder
-
 from okdata.aws.logging import log_add, log_duration, log_exception, logging_wrapper
 from okdata.aws.status import status_add, status_wrapper
-from okdata.pipeline.models import Config, StepData
+from okdata.sdk.data.dataset import Dataset
+
 from okdata.pipeline.exceptions import IllegalWrite
+from okdata.pipeline.models import Config, StepData
+from okdata.pipeline.util import sdk_config
 from okdata.pipeline.writers.s3.exceptions import (
     DistributionNotCreated,
     IncompleteTransaction,
 )
 from okdata.pipeline.writers.s3.models import Distribution, TaskConfig
 from okdata.pipeline.writers.s3.services import S3Service
-from okdata.sdk.data.dataset import Dataset
 
 patch_all()
 
 s3_service = S3Service()
 
 
-@status_wrapper
+@status_wrapper(sdk_config())
 @logging_wrapper
 @xray_recorder.capture("write_s3")
 def write_s3(event, context):
@@ -109,7 +110,7 @@ def create_distribution_with_retries(
             filenames=copied_files, content_type=content_type
         )
         return log_duration(
-            lambda: Dataset().create_distribution(
+            lambda: Dataset(sdk_config()).create_distribution(
                 output_dataset.id,
                 output_dataset.version,
                 output_dataset.edition,
@@ -128,7 +129,7 @@ def create_distribution_with_retries(
 
 def is_latest_edition(dataset_id, version, edition):
     latest_edition = log_duration(
-        lambda: Dataset().get_latest_edition(dataset_id, version),
+        lambda: Dataset(sdk_config()).get_latest_edition(dataset_id, version),
         "get_latest_edition_duration",
     )
     is_latest = [dataset_id, version, edition] == latest_edition["Id"].split("/")

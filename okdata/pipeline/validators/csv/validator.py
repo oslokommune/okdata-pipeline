@@ -6,11 +6,11 @@ from enum import Enum
 
 import boto3
 from aws_xray_sdk.core import patch_all, xray_recorder
-
 from okdata.aws.logging import log_add, logging_wrapper
 from okdata.aws.status import status_wrapper, status_add
 
 from okdata.pipeline.models import Config
+from okdata.pipeline.util import sdk_config
 from okdata.pipeline.validators.csv import string_reader
 from okdata.pipeline.validators.csv.parser import ParseErrors, parse_csv
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
@@ -45,7 +45,7 @@ class StepConfig:
         return cls(**event)
 
 
-@status_wrapper
+@status_wrapper(sdk_config())
 @logging_wrapper
 @xray_recorder.capture("validate_csv")
 def validate_csv(event, context):

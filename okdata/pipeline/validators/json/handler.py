@@ -2,11 +2,12 @@ from dataclasses import asdict, dataclass
 from json import JSONDecodeError
 
 from aws_xray_sdk.core import patch_all, xray_recorder
-
 from okdata.aws.logging import log_add, logging_wrapper
 from okdata.aws.status import status_wrapper, status_add
+
 from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.models import Config, StepData
+from okdata.pipeline.util import sdk_config
 from okdata.pipeline.validators.json.s3_reader import read_s3_data
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
@@ -25,7 +26,7 @@ class StepConfig:
             return StepConfig()
 
 
-@status_wrapper
+@status_wrapper(sdk_config())
 @logging_wrapper
 @xray_recorder.capture("validate_json")
 def validate_json(event, context):
