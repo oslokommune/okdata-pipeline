@@ -20,10 +20,9 @@ setuptools.setup(
     ),
     namespace_packages=["okdata"],
     install_requires=[
-        "awswrangler",
+        "awswrangler[deltalake]",
         "aws-xray-sdk",
         "boto3",
-        "deltalake",
         "jsonschema",
         "okdata-aws>=0.4.1",
         "okdata-sdk>=2.1.0",

@@ -12,7 +12,7 @@ attrs==23.2.0
     #   referencing
 aws-xray-sdk==2.13.0
     # via okdata-pipeline (setup.py)
-awswrangler==3.7.1
+awswrangler[deltalake]==3.7.1
     # via okdata-pipeline (setup.py)
 boto3==1.34.62
     # via
@@ -33,8 +33,8 @@ charset-normalizer==3.3.2
     # via requests
 cryptography==42.0.5
     # via jwcrypto
-deltalake==0.16.0
-    # via okdata-pipeline (setup.py)
+deltalake==0.15.3
+    # via awswrangler
 deprecation==2.1.0
     # via python-keycloak
 ecdsa==0.18.0
