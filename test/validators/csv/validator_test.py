@@ -1,14 +1,16 @@
 import json
+from unittest.mock import patch
 
 import pytest
-
 from okdata.aws.status.sdk import Status
 
-from okdata.pipeline.validators.csv.validator import (
-    StepConfig,
-    format_errors,
-    validate_csv,
-)
+with patch("okdata.pipeline.util.get_secret") as get_secret:
+    get_secret.return_value = "abc123"
+    from okdata.pipeline.validators.csv.validator import (
+        StepConfig,
+        format_errors,
+        validate_csv,
+    )
 
 
 def test_config():

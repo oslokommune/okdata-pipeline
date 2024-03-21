@@ -2,15 +2,18 @@ import json
 import os
 from dataclasses import asdict
 from pathlib import Path
-from unittest.mock import ANY
+from unittest.mock import ANY, patch
 
 import pytest
 
 from okdata.aws.status.sdk import Status
 from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.models import StepData
-from okdata.pipeline.validators.json.handler import validate_json
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
+
+with patch("okdata.pipeline.util.get_secret") as get_secret:
+    get_secret.return_value = "abc123"
+    from okdata.pipeline.validators.json.handler import validate_json
 
 test_data_directory = Path(os.path.dirname(__file__), "data")
 schema_for_object = json.loads((test_data_directory / "schema.json").read_text())
