@@ -1,10 +1,6 @@
-import moto
 import pandas as pd
-import s3fs
 
 from okdata.pipeline.converters.csv.base import Exporter
-
-s3fs.S3FileSystem.cachable = False
 
 
 def split_df(df):
@@ -13,25 +9,23 @@ def split_df(df):
     return df1, df2
 
 
-@moto.mock_s3
 def test_Exporter_read_csv_multiple_input(event, husholdninger_multiple):
     (input_prefix, files) = husholdninger_multiple()
     exporter = Exporter(event(input_prefix))
     result = exporter.read_csv()
 
-    rl = sum([len(df.read()) for filename, df in result])
+    rl = sum([len(pd.concat(df)) for filename, df in result])
     df1 = pd.read_csv(files[0])
     df2 = pd.read_csv(files[1])
-    expected = len(df1.append(df2))
+    expected = len(pd.concat([df1, df2]))
     assert rl == expected
 
 
-@moto.mock_s3
 def test_Exporter_read_csv_single_input(event, husholdninger_single):
     (input_prefix, file) = husholdninger_single()
     exporter = Exporter(event(input_prefix))
     result = exporter.read_csv()
-    rl = sum([len(df.read()) for filename, df in result])
+    rl = sum([len(pd.concat(df)) for filename, df in result])
     expected = pd.read_csv(file)
     assert rl == len(expected)
 

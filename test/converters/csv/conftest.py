@@ -2,9 +2,7 @@ import os
 import pathlib
 import shutil
 
-import boto3
 import pytest
-from moto import mock_s3
 
 from okdata.pipeline.converters.csv.base import BUCKET
 
@@ -22,13 +20,17 @@ input_path_dates = f"{pwd}/data/schema_dates.csv"
 input_path_dates_year_too_early = f"{pwd}/data/schema_dates_year_too_early.csv"
 input_path_dates_year_too_late = f"{pwd}/data/schema_dates_year_too_late.csv"
 input_path_dates_date_string_value = f"{pwd}/data/schema_dates_date_string_value.csv"
-input_path_dates_date_time_wrong = f"{pwd}/data/schema_dates_date_time_wrong.csv"
-input_path_dates_date_time = f"{pwd}/data/schema_dates_date_time.csv"
+input_path_dates_date_with_time = f"{pwd}/data/schema_dates_date_with_time.csv"
+input_path_dates_date_wrong = f"{pwd}/data/schema_dates_date_wrong.csv"
+input_path_datetimes = f"{pwd}/data/schema_datetimes.csv"
+input_path_datetimes_with_tz = f"{pwd}/data/schema_datetimes_with_tz.csv"
+input_path_datetimes_without_time = f"{pwd}/data/schema_datetimes_without_time.csv"
+input_path_datetimes_mixed_formats = f"{pwd}/data/schema_datetimes_mixed_formats.csv"
 
 
 @pytest.fixture
 def event():
-    def event_func(input_prefix, chunksize=100, schema=None):
+    def event_func(input_prefix, delimiter=None, chunksize=100, schema=None):
         event = {
             "execution_name": "boligpriser-UUID",
             "task": "csv_exporter",
@@ -41,7 +43,7 @@ def event():
                             # some. Remove this from the test once all users
                             # have been updated.
                             "format": "parquet",
-                            "delimiter": ",",
+                            "delimiter": delimiter,
                             "chunksize": chunksize,
                         }
                     },
@@ -68,79 +70,90 @@ def event():
     return event_func
 
 
-@pytest.fixture()
-def s3_mock():
-    with mock_s3():
-        yield boto3.client("s3")
+@pytest.fixture
+def schema_wrong(s3_client):
+    return lambda: single_input(s3_client, input_path_wrong_schema, "s3/prefix/")
 
 
 @pytest.fixture
-def schema_wrong():
+def schema(s3_client):
+    return lambda: single_input(s3_client, input_path_schema, "s3/prefix/")
+
+
+@pytest.fixture
+def husholdninger_single(s3_client):
+    return lambda: single_input(s3_client, input_path, "s3/prefix/")
+
+
+@pytest.fixture
+def husholdninger_multiple(s3_client):
+    return lambda: multiple_inputs(s3_client, f"{pwd}/data/multiple/", "s3/prefix/")
+
+
+@pytest.fixture
+def dates_file(s3_client):
+    return lambda: single_input(s3_client, input_path_dates, "s3/prefix/")
+
+
+@pytest.fixture
+def dates_file_year_too_early(s3_client):
     return lambda: single_input(
-        boto3.client("s3"), input_path_wrong_schema, "s3/prefix/"
+        s3_client, input_path_dates_year_too_early, "s3/prefix/"
     )
 
 
 @pytest.fixture
-def schema():
-    return lambda: single_input(boto3.client("s3"), input_path_schema, "s3/prefix/")
+def dates_file_year_too_late(s3_client):
+    return lambda: single_input(s3_client, input_path_dates_year_too_late, "s3/prefix/")
 
 
 @pytest.fixture
-def husholdninger_single():
-    return lambda: single_input(boto3.client("s3"), input_path, "s3/prefix/")
-
-
-@pytest.fixture
-def husholdninger_multiple():
-    return lambda: multiple_inputs(
-        boto3.client("s3"), f"{pwd}/data/multiple/", "s3/prefix/"
+def dates_file_date_string_value(s3_client):
+    return lambda: single_input(
+        s3_client, input_path_dates_date_string_value, "s3/prefix/"
     )
 
 
 @pytest.fixture
-def dates_file():
-    return lambda: single_input(boto3.client("s3"), input_path_dates, "s3/prefix/")
-
-
-@pytest.fixture
-def dates_file_year_too_early():
+def dates_file_date_with_time(s3_client):
     return lambda: single_input(
-        boto3.client("s3"), input_path_dates_year_too_early, "s3/prefix/"
+        s3_client, input_path_dates_date_with_time, "s3/prefix/"
     )
 
 
 @pytest.fixture
-def dates_file_year_too_late():
+def dates_file_date_wrong(s3_client):
+    return lambda: single_input(s3_client, input_path_dates_date_wrong, "s3/prefix/")
+
+
+@pytest.fixture
+def datetimes_file(s3_client):
+    return lambda: single_input(s3_client, input_path_datetimes, "s3/prefix/")
+
+
+@pytest.fixture
+def datetimes_file_with_tz(s3_client):
+    return lambda: single_input(s3_client, input_path_datetimes_with_tz, "s3/prefix/")
+
+
+@pytest.fixture
+def datetimes_file_without_time(s3_client):
     return lambda: single_input(
-        boto3.client("s3"), input_path_dates_year_too_late, "s3/prefix/"
+        s3_client, input_path_datetimes_without_time, "s3/prefix/"
     )
 
 
 @pytest.fixture
-def dates_file_date_string_value():
+def datetimes_file_mixed_formats(s3_client):
     return lambda: single_input(
-        boto3.client("s3"), input_path_dates_date_string_value, "s3/prefix/"
-    )
-
-
-@pytest.fixture
-def dates_file_date_time_wrong():
-    return lambda: single_input(
-        boto3.client("s3"), input_path_dates_date_time_wrong, "s3/prefix/"
-    )
-
-
-@pytest.fixture
-def dates_file_date_time():
-    return lambda: single_input(
-        boto3.client("s3"), input_path_dates_date_time, "s3/prefix/"
+        s3_client, input_path_datetimes_mixed_formats, "s3/prefix/"
     )
 
 
 def single_input(client, test_file, input_prefix):
     client.create_bucket(
-        Bucket=BUCKET, CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
+        Bucket=BUCKET,
+        CreateBucketConfiguration={"LocationConstraint": "eu-west-1"},
     )
     with open(test_file) as f:
         client.put_object(

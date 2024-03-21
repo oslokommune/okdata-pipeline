@@ -1,14 +1,8 @@
 import os
 import sys
 
-from moto import mock_s3
-
-from test.util import mock_aws_s3_client
-
 CWD = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(CWD, ".."))
-
-bucket = "test-bucket"
 
 event = {
     "execution_name": "dataset-uuid",
@@ -61,11 +55,8 @@ event_default = {
 expected_content = "A;B\n" + "1;foo\n" + "2;bar\n" + "3;baz\n"
 
 
-@mock_s3
-def test_xls_to_csv():
+def test_xls_to_csv(s3_client, s3_bucket):
     from okdata.pipeline.converters.xls.main import xls_to_csv
-
-    s3_mock = mock_aws_s3_client(bucket)
 
     excel_path = os.path.join(CWD, "data", "simple.xlsx")
     upload_key = "raw/green/dataset-in/1/20181115/simple.xlsx"
@@ -73,14 +64,14 @@ def test_xls_to_csv():
     download_key = output_prefix + "simple.csv"
 
     with open(excel_path, "rb") as f:
-        s3_mock.put_object(Bucket=bucket, Key=upload_key, Body=f)
+        s3_client.put_object(Bucket=s3_bucket, Key=upload_key, Body=f)
 
     response = xls_to_csv(event, 0)
     assert response["status"] == "OK"
     assert response["s3_input_prefixes"]["dataset-out"] == output_prefix
 
     content = (
-        s3_mock.get_object(Bucket=bucket, Key=download_key)
+        s3_client.get_object(Bucket=s3_bucket, Key=download_key)
         .get("Body")
         .read()
         .decode("utf-8")
@@ -91,11 +82,8 @@ def test_xls_to_csv():
     assert content == expected_content
 
 
-@mock_s3
-def test_xls_to_csv_multiple_files():
+def test_xls_to_csv_multiple_files(s3_client, s3_bucket):
     from okdata.pipeline.converters.xls.main import xls_to_csv
-
-    s3_mock = mock_aws_s3_client(bucket)
 
     excel_path = os.path.join(CWD, "data", "simple.xlsx")
     upload_prefix = "raw/green/dataset-in/1/20181115/"
@@ -103,7 +91,7 @@ def test_xls_to_csv_multiple_files():
 
     for k in ["simple1.xlsx", "simple2.xlsx"]:
         with open(excel_path, "rb") as f:
-            s3_mock.put_object(Bucket=bucket, Key=upload_prefix + k, Body=f)
+            s3_client.put_object(Bucket=s3_bucket, Key=upload_prefix + k, Body=f)
 
     response = xls_to_csv(event, 0)
     assert response["status"] == "OK"
@@ -112,7 +100,10 @@ def test_xls_to_csv_multiple_files():
     for filename in ["simple1.csv", "simple2.csv"]:
         k = output_prefix + filename
         content = (
-            s3_mock.get_object(Bucket=bucket, Key=k).get("Body").read().decode("utf-8")
+            s3_client.get_object(Bucket=s3_bucket, Key=k)
+            .get("Body")
+            .read()
+            .decode("utf-8")
         )
         # To avoid a failed test when running on Windows
         content = content.replace("\r", "")
@@ -120,11 +111,8 @@ def test_xls_to_csv_multiple_files():
         assert content == expected_content
 
 
-@mock_s3
-def test_xls_to_csv_default_config():
+def test_xls_to_csv_default_config(s3_client, s3_bucket):
     from okdata.pipeline.converters.xls.main import xls_to_csv
-
-    s3_mock = mock_aws_s3_client(bucket)
 
     excel_path = os.path.join(CWD, "data", "simple.xlsx")
     upload_key = "raw/green/dataset-in/1/20181115/simple.xlsx"
@@ -132,14 +120,14 @@ def test_xls_to_csv_default_config():
     download_key = output_prefix + "simple.csv"
 
     with open(excel_path, "rb") as f:
-        s3_mock.put_object(Bucket=bucket, Key=upload_key, Body=f)
+        s3_client.put_object(Bucket=s3_bucket, Key=upload_key, Body=f)
 
     response = xls_to_csv(event_default, 0)
     assert response["status"] == "OK"
     assert response["s3_input_prefixes"]["dataset-out"] == output_prefix
 
     content = (
-        s3_mock.get_object(Bucket=bucket, Key=download_key)
+        s3_client.get_object(Bucket=s3_bucket, Key=download_key)
         .get("Body")
         .read()
         .decode("utf-8")

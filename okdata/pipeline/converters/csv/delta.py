@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from deltalake import write_deltalake
+import awswrangler as wr
 from pandas.errors import OutOfBoundsDatetime
 
 from okdata.aws.logging import log_add
@@ -11,8 +11,17 @@ from okdata.pipeline.converters.csv.base import BUCKET, Exporter
 class DeltaExporter(Exporter):
     @staticmethod
     def _export(source, schema, out_prefix):
-        df = Exporter.set_date_columns_on_dataframe(source, schema)
-        write_deltalake(out_prefix, df)
+        if schema:
+            source = Exporter.set_date_columns_on_dataframe(source, schema)
+        else:
+            source = source.apply(Exporter.infer_column_dtype_from_input)
+
+        wr.s3.to_deltalake(
+            df=source,
+            path=out_prefix,
+            s3_allow_unsafe_rename=True,
+        )
+
         return out_prefix
 
     def export(self):

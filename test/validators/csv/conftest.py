@@ -1,8 +1,6 @@
 import os
 from pathlib import Path
 
-import boto3
-from moto import mock_s3
 from pytest import fixture
 
 
@@ -27,36 +25,20 @@ def boligpriser_header():
 
 
 @fixture
-def s3():
-    with mock_s3():
-        boto3.DEFAULT_SESSION = None
-        yield boto3.client("s3")
-
-
-@fixture
-def s3_bucket(s3):
-    bucket = os.environ["BUCKET_NAME"]
-    s3.create_bucket(
-        Bucket=bucket, CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
-    )
-    return bucket
-
-
-@fixture
-def s3_object(s3, s3_bucket):
+def s3_object(s3_client, s3_bucket):
     def _s3_object(data):
         key = "intermediate/green/foo/bar/test.csv"
-        s3.put_object(Bucket=s3_bucket, Key=key, Body=bytes(data, "utf-8"))
+        s3_client.put_object(Bucket=s3_bucket, Key=key, Body=bytes(data, "utf-8"))
         return {"bucket": s3_bucket, "key": key}
 
     return _s3_object
 
 
 @fixture
-def s3_response(s3, s3_object):
+def s3_response(s3_client, s3_object):
     def _s3_response(data):
         res = s3_object(data)
-        return s3.get_object(Bucket=res["bucket"], Key=res["key"])
+        return s3_client.get_object(Bucket=res["bucket"], Key=res["key"])
 
     return _s3_response
 

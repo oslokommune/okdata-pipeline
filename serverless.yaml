@@ -37,7 +37,6 @@ provider:
     OKDATA_ENVIRONMENT: ${self:custom.okdataEnvironment.${self:provider.stage}, self:custom.okdataEnvironment.dev}
     OKDATA_CLIENT_ID: ${self:service}
     OKDATA_CLIENT_SECRET: ${ssm:/dataplatform/${self:service}/keycloak-client-secret}
-    AWS_S3_ALLOW_UNSAFE_RENAME: true
 
 package:
   patterns:
