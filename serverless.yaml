@@ -82,7 +82,8 @@ functions:
       name: okdata-pipeline
       command:
         - okdata.pipeline.converters.xls.main.xls_to_csv
-    timeout: 120
+    memorySize: 2048
+    timeout: 240
 
 plugins:
   - serverless-better-credentials # must be first
