@@ -62,7 +62,7 @@ numpy==1.26.4
     #   awswrangler
     #   pandas
     #   pyarrow
-okdata-aws==2.1.0
+okdata-aws==4.0.0
     # via okdata-pipeline (setup.py)
 okdata-sdk==3.1.0
     # via
@@ -90,8 +90,6 @@ pyasn1==0.5.1
     #   rsa
 pycparser==2.21
     # via cffi
-pydantic==1.10.14
-    # via okdata-aws
 pyjwt==2.8.0
     # via okdata-sdk
 python-dateutil==2.9.0.post0
@@ -140,7 +138,6 @@ typing-extensions==4.10.0
     # via
     #   awswrangler
     #   jwcrypto
-    #   pydantic
 tzdata==2024.1
     # via pandas
 urllib3==1.26.18

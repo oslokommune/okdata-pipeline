@@ -1,23 +1,23 @@
 import re
-from unittest.mock import ANY, call
 from dataclasses import asdict
+from unittest.mock import ANY, call, patch
 
 import pytest
-
-import test.writers.s3.test_data as test_data
-
 from okdata.aws.status.sdk import Status
 
-
+import test.writers.s3.test_data as test_data
 from okdata.pipeline.exceptions import IllegalWrite
 from okdata.pipeline.models import StepData
-from okdata.pipeline.writers.s3 import handlers
 from okdata.pipeline.writers.s3.exceptions import (
     DistributionNotCreated,
     IncompleteTransaction,
 )
 from okdata.pipeline.writers.s3.services import S3Service
 from okdata.sdk.data.dataset import Dataset
+
+with patch("okdata.pipeline.util.get_secret") as get_secret:
+    get_secret.return_value = "abc123"
+    from okdata.pipeline.writers.s3 import handlers
 
 
 def test_copy_to_processed_ok(

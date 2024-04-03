@@ -24,7 +24,7 @@ setuptools.setup(
         "aws-xray-sdk",
         "boto3",
         "jsonschema",
-        "okdata-aws>=0.4.1",
+        "okdata-aws>=4,<5",
         "okdata-sdk>=2.1.0",
         "openpyxl",
         "pandas>2,<3",
