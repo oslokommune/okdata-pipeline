@@ -5,8 +5,8 @@ import awswrangler as wr
 from pandas.errors import OutOfBoundsDatetime
 
 from okdata.aws.logging import log_add
+from okdata.pipeline.converters.base import BUCKET, Exporter
 from okdata.pipeline.models import StepData
-from okdata.pipeline.converters.csv.base import BUCKET, Exporter
 
 # The maximum number of processes to run simultaneously when exporting in
 # parallel. Set to match the number of vCPUs available in AWS Lambda, which is

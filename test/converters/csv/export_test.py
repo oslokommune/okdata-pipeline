@@ -1,6 +1,6 @@
 import pandas as pd
 
-from okdata.pipeline.converters.csv.base import Exporter
+from okdata.pipeline.converters.base import Exporter
 
 
 def split_df(df):

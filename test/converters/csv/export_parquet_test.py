@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 import pytz
 
-from okdata.pipeline.converters.csv.base import BUCKET
-from okdata.pipeline.converters.csv.exceptions import ConversionError
+from okdata.pipeline.converters.base import BUCKET
+from okdata.pipeline.converters.exceptions import ConversionError
 from okdata.pipeline.converters.csv.parquet import ParquetExporter
 
 
