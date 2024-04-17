@@ -55,6 +55,11 @@ functions:
       name: okdata-pipeline
       command:
         - okdata.pipeline.converters.csv.handler.csv_to_delta
+  json-to-delta:
+    image:
+      name: okdata-pipeline
+      command:
+        - okdata.pipeline.converters.json.handlers.json_to_delta
   invoke-lambda:
     image:
       name: okdata-pipeline

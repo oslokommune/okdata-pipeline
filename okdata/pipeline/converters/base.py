@@ -7,7 +7,7 @@ import boto3
 import pandas as pd
 
 from okdata.aws.logging import log_add
-from okdata.pipeline.converters.csv.exceptions import ConversionError
+from okdata.pipeline.converters.exceptions import ConversionError
 from okdata.pipeline.models import Config
 
 BUCKET = os.environ["BUCKET_NAME"]
@@ -63,6 +63,19 @@ class Exporter:
         return df
 
     @staticmethod
+    def _read_json_data(s3_key, chunksize):
+        try:
+            return wr.s3.read_json(
+                path=s3_key,
+                compression="gzip" if s3_key.endswith(".gz") else "infer",
+                chunksize=chunksize if chunksize else None,
+                dtype=Exporter.get_dtype(),
+                dtype_backend="pyarrow",
+            )
+        except ValueError as ve:
+            raise ConversionError(str(ve)) from ve
+
+    @staticmethod
     def infer_column_dtype_from_input(col):
         # Check for date(time) type.
         if col.dtypes.pyarrow_dtype == "string":
@@ -79,7 +92,7 @@ class Exporter:
         return col
 
     @staticmethod
-    def get_dtype(schema):
+    def get_dtype(schema=None):
         """
         Identify datatypes to apply to individual dataset columns based on
         provided `schema`.
@@ -181,6 +194,19 @@ class Exporter:
                 delimiter=delimiter,
                 chunksize=self.task_config.chunksize,
             )
+            filename = key.split("/")[-1]
+            filename = Exporter.remove_suffix(filename)
+            files.append((filename, df))
+        return files
+
+    def read_json(self):
+        s3_objects = self._list_s3_objects()
+        log_add(s3_keys=[obj["Key"] for obj in s3_objects])
+
+        files = []
+        for s3_object in s3_objects:
+            key = self.s3fs_prefix + s3_object["Key"]
+            df = self._read_json_data(key, self.task_config.chunksize)
             filename = key.split("/")[-1]
             filename = Exporter.remove_suffix(filename)
             files.append((filename, df))

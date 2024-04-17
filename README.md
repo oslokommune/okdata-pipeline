@@ -7,6 +7,7 @@ Dataplattform](https://oslokommune.github.io/dataplattform/).
 
 - converters
   - [csv](doc/converters/csv.md)
+  - [json](doc/converters/json.md)
   - [xls](doc/converters/xls.md)
 - [lambda_invoker](doc/lambda_invoker.md)
 - validators

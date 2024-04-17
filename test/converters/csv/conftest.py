@@ -4,7 +4,7 @@ import shutil
 
 import pytest
 
-from okdata.pipeline.converters.csv.base import BUCKET
+from okdata.pipeline.converters.base import BUCKET
 
 pwd = pathlib.Path(__file__).parent.absolute()
 
