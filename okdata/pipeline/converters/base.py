@@ -69,7 +69,7 @@ class Exporter:
                 path=s3_key,
                 compression="gzip" if s3_key.endswith(".gz") else "infer",
                 chunksize=chunksize if chunksize else None,
-                dtype=Exporter.get_dtype(),
+                dtype=False,
                 dtype_backend="pyarrow",
             )
         except ValueError as ve:
@@ -78,7 +78,7 @@ class Exporter:
     @staticmethod
     def infer_column_dtype_from_input(col):
         # Check for date(time) type.
-        if col.dtypes.pyarrow_dtype == "string":
+        if getattr(col.dtypes, "pyarrow_dtype", None) == "string":
             try:
                 return pd.to_datetime(col, format="ISO8601")
             except ValueError:
@@ -86,7 +86,7 @@ class Exporter:
                 pass
 
         # Default to string type for column with missing values.
-        if col.dtypes.pyarrow_dtype == "null":
+        if getattr(col.dtypes, "pyarrow_dtype", None) in ("null", None):
             return col.astype(pd.StringDtype("pyarrow"))
 
         return col
