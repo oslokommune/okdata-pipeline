@@ -31,5 +31,5 @@ setuptools.setup(
         "python-dateutil",
         "requests",
     ],
-    python_requires="==3.9.*",
+    python_requires="==3.11.*",
 )
