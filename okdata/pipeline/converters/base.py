@@ -8,7 +8,7 @@ import pandas as pd
 
 from okdata.aws.logging import log_add
 from okdata.pipeline.converters.exceptions import ConversionError
-from okdata.pipeline.models import Config
+from okdata.pipeline.models import Config, StepData
 
 BUCKET = os.environ["BUCKET_NAME"]
 JSONSCHEMA_TO_DTYPE_MAP = {
@@ -74,6 +74,10 @@ class Exporter:
             )
         except ValueError as ve:
             raise ConversionError(str(ve)) from ve
+
+    @staticmethod
+    def _read_xlsx_data(s3_key):
+        return wr.s3.read_excel(s3_key)
 
     @staticmethod
     def infer_column_dtype_from_input(col):
@@ -212,8 +216,34 @@ class Exporter:
             files.append((filename, df))
         return files
 
+    def read_xlsx(self):
+        s3_objects = self._list_s3_objects()
+        log_add(s3_keys=[obj["Key"] for obj in s3_objects])
+
+        files = []
+        for s3_object in s3_objects:
+            key = self.s3fs_prefix + s3_object["Key"]
+            df = self._read_xlsx_data(key)
+            filename = key.split("/")[-1]
+            filename = Exporter.remove_suffix(filename)
+            files.append((filename, df))
+        return files
+
     def export(self):
         raise NotImplementedError
+
+    def export_response(self, s3_prefix, outputs, errors):
+        has_errors = len(errors) > 0
+        log_output = {"errors": errors} if has_errors else {"outputs": outputs}
+        log_add(**log_output)
+
+        return asdict(
+            StepData(
+                status="CONVERSION_FAILED" if has_errors else "CONVERSION_SUCCESS",
+                errors=errors,
+                s3_input_prefixes={self.config.payload.output_dataset.id: s3_prefix},
+            )
+        )
 
 
 @dataclass

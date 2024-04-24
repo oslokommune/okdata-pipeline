@@ -1,12 +1,9 @@
-from dataclasses import asdict
 from multiprocessing import Pipe, Process, connection
 
 import awswrangler as wr
 from pandas.errors import OutOfBoundsDatetime
 
-from okdata.aws.logging import log_add
 from okdata.pipeline.converters.base import BUCKET, Exporter
-from okdata.pipeline.models import StepData
 
 # The maximum number of processes to run simultaneously when exporting in
 # parallel. Set to match the number of vCPUs available in AWS Lambda, which is
@@ -84,23 +81,4 @@ class ParquetExporter(Exporter):
         except ValueError as e:
             errors.append({"error": "ValueError", "message": str(e)})
 
-        if len(errors) > 0:
-            log_add(errors=errors)
-            return asdict(
-                StepData(
-                    status="CONVERSION_FAILED",
-                    errors=errors,
-                    s3_input_prefixes={
-                        self.config.payload.output_dataset.id: s3_prefix
-                    },
-                )
-            )
-
-        log_add(parquetfiles=outputs)
-        return asdict(
-            StepData(
-                status="CONVERSION_SUCCESS",
-                errors=[],
-                s3_input_prefixes={self.config.payload.output_dataset.id: s3_prefix},
-            )
-        )
+        return self.export_response(s3_prefix, outputs, errors)

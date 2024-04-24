@@ -1,6 +1,6 @@
 # converters.xls
 
-Pipeline component for transforming Excel files to CSV.
+Pipeline component for transforming Excel (XLSX) files to CSV or Delta.
 
 ## Input event format
 
@@ -24,7 +24,7 @@ Example Lambda event input:
 }
 ```
 
-The config object takes the following key/values:
+The config object takes the following key/values for the CSV converter:
 
 | Key               | Type                | Description                                       | Default value                        |
 | ----------------- | ------------------- | ------------------------------------------------- | ------------------------------------ |
