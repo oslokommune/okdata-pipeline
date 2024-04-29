@@ -1,6 +1,8 @@
 import os
 import sys
 
+from okdata.pipeline.converters.xls.handlers import xlsx_to_csv
+
 CWD = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(CWD, ".."))
 
@@ -55,9 +57,7 @@ event_default = {
 expected_content = "A;B\n" + "1;foo\n" + "2;bar\n" + "3;baz\n"
 
 
-def test_xls_to_csv(s3_client, s3_bucket):
-    from okdata.pipeline.converters.xls.main import xls_to_csv
-
+def test_xlsx_to_csv(s3_client, s3_bucket):
     excel_path = os.path.join(CWD, "data", "simple.xlsx")
     upload_key = "raw/green/dataset-in/1/20181115/simple.xlsx"
     output_prefix = "intermediate/yellow/dataset-out/1/20200123/xls2csv/"
@@ -66,7 +66,7 @@ def test_xls_to_csv(s3_client, s3_bucket):
     with open(excel_path, "rb") as f:
         s3_client.put_object(Bucket=s3_bucket, Key=upload_key, Body=f)
 
-    response = xls_to_csv(event, 0)
+    response = xlsx_to_csv(event, 0)
     assert response["status"] == "OK"
     assert response["s3_input_prefixes"]["dataset-out"] == output_prefix
 
@@ -82,9 +82,7 @@ def test_xls_to_csv(s3_client, s3_bucket):
     assert content == expected_content
 
 
-def test_xls_to_csv_multiple_files(s3_client, s3_bucket):
-    from okdata.pipeline.converters.xls.main import xls_to_csv
-
+def test_xlsx_to_csv_multiple_files(s3_client, s3_bucket):
     excel_path = os.path.join(CWD, "data", "simple.xlsx")
     upload_prefix = "raw/green/dataset-in/1/20181115/"
     output_prefix = "intermediate/yellow/dataset-out/1/20200123/xls2csv/"
@@ -93,7 +91,7 @@ def test_xls_to_csv_multiple_files(s3_client, s3_bucket):
         with open(excel_path, "rb") as f:
             s3_client.put_object(Bucket=s3_bucket, Key=upload_prefix + k, Body=f)
 
-    response = xls_to_csv(event, 0)
+    response = xlsx_to_csv(event, 0)
     assert response["status"] == "OK"
     assert response["s3_input_prefixes"]["dataset-out"] == output_prefix
 
@@ -111,9 +109,7 @@ def test_xls_to_csv_multiple_files(s3_client, s3_bucket):
         assert content == expected_content
 
 
-def test_xls_to_csv_default_config(s3_client, s3_bucket):
-    from okdata.pipeline.converters.xls.main import xls_to_csv
-
+def test_xlsx_to_csv_default_config(s3_client, s3_bucket):
     excel_path = os.path.join(CWD, "data", "simple.xlsx")
     upload_key = "raw/green/dataset-in/1/20181115/simple.xlsx"
     output_prefix = "intermediate/yellow/dataset-out/1/20200123/xls2csv/"
@@ -122,7 +118,7 @@ def test_xls_to_csv_default_config(s3_client, s3_bucket):
     with open(excel_path, "rb") as f:
         s3_client.put_object(Bucket=s3_bucket, Key=upload_key, Body=f)
 
-    response = xls_to_csv(event_default, 0)
+    response = xlsx_to_csv(event_default, 0)
     assert response["status"] == "OK"
     assert response["s3_input_prefixes"]["dataset-out"] == output_prefix
 
