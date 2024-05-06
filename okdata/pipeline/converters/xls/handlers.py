@@ -1,6 +1,8 @@
 from dataclasses import asdict
 
 import boto3
+from aws_xray_sdk.core import xray_recorder
+from okdata.aws.logging import logging_wrapper
 
 from okdata.pipeline.converters.base import BUCKET
 from okdata.pipeline.converters.xls.TableConfig import TableConfig
@@ -8,6 +10,8 @@ from okdata.pipeline.models import Config
 from okdata.pipeline.converters.xls.export import convert_to_csv, DeltaExporter
 
 
+@logging_wrapper("xlsx-to-csv")
+@xray_recorder.capture("xlsx_to_csv")
 def xlsx_to_csv(event, context):
     s3_client = boto3.client("s3")
     config = Config.from_lambda_event(event)
@@ -44,5 +48,7 @@ def xlsx_to_csv(event, context):
     return asdict(config.payload.step_data)
 
 
+@logging_wrapper("xlsx-to-delta")
+@xray_recorder.capture("xlsx_to_delta")
 def xlsx_to_delta(event, context):
     return DeltaExporter(event).export()
