@@ -3,7 +3,7 @@ class ParseErrors(Exception):
         self.errors = errors
 
 
-def parse_csv(reader, schema, header=None):
+def parse_csv(reader, schema, header=[]):
     if "items" not in schema or "properties" not in schema["items"]:
         return list(reader)
 
@@ -11,6 +11,7 @@ def parse_csv(reader, schema, header=None):
 
     errors = []
     data = []
+    cleaned_header = [h.strip() for h in header]
 
     for row_i, row in enumerate(reader):
         insert_row = {}
@@ -19,8 +20,17 @@ def parse_csv(reader, schema, header=None):
             if value == "":
                 continue
 
-            key = header[col_i] if header else f"{col_i}"
-            value_type = row_schema[key]["type"]
+            key = cleaned_header[col_i] if header else f"{col_i}"
+            try:
+                value_type = row_schema[key]["type"]
+            except KeyError:
+                errors.append(
+                    {
+                        "row": row_i,
+                        "column": key,
+                        "message": f"Unexpected header: '{key}'",
+                    }
+                )
 
             try:
                 insert_row[key] = parse_value(value, value_type)

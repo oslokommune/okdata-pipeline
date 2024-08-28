@@ -5,7 +5,7 @@ import pytest
 from okdata.pipeline.validators.csv.parser import ParseErrors, parse_csv, parse_value
 
 
-class TestValid(object):
+class TestValid:
     def test_parse_with_headers(self, boligpriser_schema, boligpriser_header):
         data = parse_csv(
             [
@@ -30,6 +30,18 @@ class TestValid(object):
             },
         ]
 
+    def test_parse_headers_with_trailing_whitespace(
+        self, boligpriser_schema, boligpriser_header_with_trailing_whitespace
+    ):
+        data = parse_csv(
+            [["01", "Ø. byflak", "10.01", "true"]],
+            json.loads(boligpriser_schema),
+            header=boligpriser_header_with_trailing_whitespace,
+        )
+        assert data == [
+            {"delbydel_id": "01", "navn": "Ø. byflak", "pris": 10.01, "til_salg": True}
+        ]
+
     def test_parse_no_headers(self, no_header_schema):
         data = parse_csv(
             [["120", "Foo", "true"], ["999199", "Bar", "false"]],
@@ -45,7 +57,7 @@ class TestValid(object):
         assert data == [{"0": 55, "2": True}]
 
 
-class TestInvalid(object):
+class TestInvalid:
     @pytest.mark.parametrize("test_input", ["nope", "true"])
     def test_wrong_floats(self, boligpriser_schema, boligpriser_header, test_input):
         with pytest.raises(ParseErrors) as e:
@@ -74,6 +86,23 @@ class TestInvalid(object):
                 }
             ]
 
+    def test_unknown_header(self, boligpriser_schema, boligpriser_header):
+        boligpriser_header.append("unknown")
+
+        with pytest.raises(ParseErrors) as e:
+            parse_csv(
+                [["001", "Østre byflak", "1010.01", "true", "true"]],
+                json.loads(boligpriser_schema),
+                header=boligpriser_header,
+            )
+            assert e.errors == [
+                {
+                    "row": 0,
+                    "column": "unknown",
+                    "message": "Unexpected header: 'unknown'",
+                }
+            ]
+
 
 def test_simple_array():
     data = parse_csv([["1", "foo"], ["2", "bar"]], {"type": "array"})
@@ -85,7 +114,7 @@ def test_empty_schema():
     assert data == [["1", "foo"], ["2", "bar"]]
 
 
-class TestParseInt(object):
+class TestParseInt:
     def test_int(self):
         assert parse_value("2", "integer") == 2
 
@@ -95,7 +124,7 @@ class TestParseInt(object):
             parse_value(test_input, "integer")
 
 
-class TestParseNumber(object):
+class TestParseNumber:
     @pytest.mark.parametrize(
         "test_input, expected",
         [("1.5", 1.5), ("201.2321", 201.2321), ("1,8", 1.8), ("0,854", 0.854)],
@@ -112,7 +141,7 @@ class TestParseNumber(object):
             parse_value(test_input, "number")
 
 
-class TestParseBoolean(object):
+class TestParseBoolean:
     def test_true(self):
         assert parse_value("true", "boolean") is True
 
@@ -127,7 +156,7 @@ class TestParseBoolean(object):
             parse_value(test_input, "boolean")
 
 
-class TestParseString(object):
+class TestParseString:
     def test_number(self):
         assert parse_value("123", "string") == "123"
 
@@ -138,7 +167,7 @@ class TestParseString(object):
         assert parse_value("", "string") == ""
 
 
-class TestNull(object):
+class TestNull:
     def test_null(self):
         assert parse_value("null", "null") is None
 
