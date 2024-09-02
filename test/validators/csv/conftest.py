@@ -25,6 +25,11 @@ def boligpriser_header():
 
 
 @fixture
+def boligpriser_header_with_trailing_whitespace():
+    return ["delbydel_id", "navn ", " pris", " til_salg "]
+
+
+@fixture
 def s3_object(s3_client, s3_bucket):
     def _s3_object(data):
         key = "intermediate/green/foo/bar/test.csv"
