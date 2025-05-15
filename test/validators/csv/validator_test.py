@@ -68,7 +68,7 @@ def test_csv_validator_errors(s3_client, s3_bucket, event, mock_status):
         assert len(error_list) == 2
 
 
-def test_format_errors():
+def test_format_errors_with_column():
     e = {
         "row": 1,
         "column": "Bydelsnr",
@@ -77,8 +77,17 @@ def test_format_errors():
     result = format_errors(e, "nb")
     assert (
         result
-        == "Feil på linje 1, kolonne Bydelsnr. Mer beskrivelse: could not convert string float: 'gamle oslo'"
+        == "Feil på linje 1, kolonne Bydelsnr: could not convert string float: 'gamle oslo'"
     )
+
+
+def test_format_errors_without_column():
+    e = {
+        "row": 1,
+        "message": "could not convert string float: 'gamle oslo'",
+    }
+    result = format_errors(e, "en")
+    assert result == "Error on line 1: could not convert string float: 'gamle oslo'"
 
 
 @pytest.fixture

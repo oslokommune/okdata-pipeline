@@ -158,15 +158,21 @@ def validate_csv(event, context):
         # schema for the validation step
         return asdict(config.payload.step_data)
 
-    validation_errors = JsonSchemaValidator(step_config.schema).validate(csv_data)
+    # Cut off after the first 20 error messages, otherwise the payload may get
+    # too big for the status API.
+    validation_errors = JsonSchemaValidator(step_config.schema).validate(csv_data)[:20]
 
     if validation_errors:
         status_add(
             errors=[
                 {
                     "message": {
-                        "nb": f"Valideringen feilet med feilmelding: {validation_errors}",
-                        "en": f"The validation failed with: {validation_errors}",
+                        "nb": "\n".join(
+                            [format_errors(e, "nb") for e in validation_errors]
+                        ),
+                        "en": "\n".join(
+                            [format_errors(e, "en") for e in validation_errors]
+                        ),
                     }
                 }
             ]
@@ -187,14 +193,18 @@ def _with_error(config: Config, errors):
 
 def format_errors(errors, language):
     line = errors["row"]
-    column = errors["column"]
+    column = errors.get("column")
     message = errors["message"]
 
     if language == "nb":
-        return "Feil på linje {}, kolonne {}. Mer beskrivelse: {}".format(
-            line, column, message
+        return "Feil på linje {}{}: {}".format(
+            line,
+            f", kolonne {column}" if column else "",
+            message,
         )
     else:
-        return "You have an error on line {}, column {}. More description: {}".format(
-            line, column, message
+        return "Error on line {}{}: {}".format(
+            line,
+            f", column {column}" if column else "",
+            message,
         )
