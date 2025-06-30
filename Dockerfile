@@ -1,6 +1,6 @@
-FROM public.ecr.aws/lambda/python:3.11
+FROM public.ecr.aws/lambda/python:3.13
 
-RUN yum install gcc -y
+RUN dnf install gcc -y
 
 COPY okdata ${LAMBDA_TASK_ROOT}/okdata
 COPY README.md ${LAMBDA_TASK_ROOT}
