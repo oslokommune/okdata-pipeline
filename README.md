@@ -18,19 +18,17 @@ Dataplattform](https://oslokommune.github.io/dataplattform/).
 
 ## Setup
 
-1. Install [Serverless Framework](https://serverless.com/framework/docs/getting-started/)
-2. python3.11 -m venv .venv
-3. Install Serverless plugins: `make init`
-4. Install Python toolchain: `python3 -m pip install (--user) tox black pip-tools`
-   - If running with `--user` flag, add `$HOME/.local/bin` to `$PATH`
+```sh
+make init
+```
 
-## Formatting code
+## Test
 
-Code is formatted using [black](https://pypi.org/project/black/): `make format`.
+Tests are run using [tox](https://pypi.org/project/tox/):
 
-## Running tests
-
-Tests are run using [tox](https://pypi.org/project/tox/): `make test`.
+```sh
+make test
+```
 
 For tests and linting we use [pytest](https://pypi.org/project/pytest/),
 [flake8](https://pypi.org/project/flake8/), and
@@ -38,7 +36,8 @@ For tests and linting we use [pytest](https://pypi.org/project/pytest/),
 
 ## Deploy
 
-Deploy to both dev and prod is automatic via GitHub Actions on push to `main`.
+Example GitHub Actions for deploying to dev and prod on push to `main` is
+included in `.github/workflows`.
 
 You can also deploy from a local machine to dev with:
 
