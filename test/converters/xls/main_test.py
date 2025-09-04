@@ -132,3 +132,35 @@ def test_xlsx_to_csv_default_config(s3_client, s3_bucket):
     content = content.replace("\r", "")
 
     assert content == expected_content
+
+
+def test_xlsx_to_csv_dirty_spreadsheet(s3_client, s3_bucket):
+    excel_path = os.path.join(CWD, "data", "lav_inntekt_dirty.xlsx")
+    upload_key = "raw/green/dataset-in/1/20181115/lav_inntekt_dirty.xlsx"
+    output_prefix = "intermediate/yellow/dataset-out/1/20200123/xls2csv/"
+    download_key = output_prefix + "lav_inntekt_dirty.csv"
+
+    with open(excel_path, "rb") as f:
+        s3_client.put_object(Bucket=s3_bucket, Key=upload_key, Body=f)
+
+    del event["payload"]["pipeline"]["task_config"]
+    response = xlsx_to_csv(event, None)
+    assert response["status"] == "OK"
+    assert response["s3_input_prefixes"]["dataset-out"] == output_prefix
+
+    content = (
+        s3_client.get_object(Bucket=s3_bucket, Key=download_key)
+        .get("Body")
+        .read()
+        .decode("utf-8")
+    )
+    first_line = content.split("\n", 1)[0]
+    headers = first_line.split(";")
+
+    assert headers == [
+        "År",
+        "Bydel",
+        "Delbydel",
+        "Høyeste fullførte utdanning",
+        "Antall personer",
+    ]
