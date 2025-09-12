@@ -17,8 +17,14 @@ def convert_to_csv(xlsx_input, output, config):
         conv = TableConverter(config)
         wb = conv.read_excel_table(tmpfile.name)
         df = conv.convert_table(wb)
-        csv = df.to_csv(sep=";", index=False)
 
+        # Drop unnamed columns; these typically appear because of some
+        # unintended whitespace in cells and cause us trouble later if not
+        # removed.
+        unnamed_cols = [col for col in df.columns if col.startswith("Unnamed:")]
+        df = df.drop(columns=unnamed_cols)
+
+        csv = df.to_csv(sep=";", index=False)
         s3.Object(BUCKET, output).put(
             Body=csv, ContentType="text/csv", ContentEncoding="utf-8"
         )
