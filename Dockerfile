@@ -1,6 +1,6 @@
 FROM public.ecr.aws/lambda/python:3.13
 
-RUN dnf install gcc -y
+RUN dnf install gcc shadow-utils -y
 
 COPY okdata ${LAMBDA_TASK_ROOT}/okdata
 COPY README.md ${LAMBDA_TASK_ROOT}
@@ -12,5 +12,10 @@ RUN pip install --no-deps .
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+
+RUN /sbin/groupadd -r app
+RUN /sbin/useradd -r -g app app
+RUN chown -R app:app ${LAMBDA_TASK_ROOT}
+USER app
 
 CMD ["set-me-in-serverless.yaml"]
