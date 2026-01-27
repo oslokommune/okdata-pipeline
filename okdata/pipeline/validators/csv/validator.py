@@ -15,7 +15,6 @@ from okdata.pipeline.validators.csv import string_reader
 from okdata.pipeline.validators.csv.parser import ParseErrors, parse_csv
 from okdata.pipeline.validators.jsonschema_validator import JsonSchemaValidator
 
-
 patch_all()
 
 BUCKET = os.environ["BUCKET_NAME"]

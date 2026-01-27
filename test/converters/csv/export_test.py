@@ -10,7 +10,7 @@ def split_df(df):
 
 
 def test_Exporter_read_csv_multiple_input(event, husholdninger_multiple):
-    (input_prefix, files) = husholdninger_multiple()
+    input_prefix, files = husholdninger_multiple()
     exporter = Exporter(event(input_prefix))
     result = exporter.read_csv()
 
@@ -22,7 +22,7 @@ def test_Exporter_read_csv_multiple_input(event, husholdninger_multiple):
 
 
 def test_Exporter_read_csv_single_input(event, husholdninger_single):
-    (input_prefix, file) = husholdninger_single()
+    input_prefix, file = husholdninger_single()
     exporter = Exporter(event(input_prefix))
     result = exporter.read_csv()
     rl = sum([len(pd.concat(df)) for filename, df in result])

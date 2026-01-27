@@ -30,7 +30,7 @@ def test_ParquetExporter_chunked(event, husholdninger_single):
 
 
 def test_ParquetExporter_no_chunks(event, husholdninger_single):
-    (prefix, csv_file) = husholdninger_single()
+    prefix, csv_file = husholdninger_single()
     event_data = event(prefix, chunksize=None)
     exporter = ParquetExporter(event_data)
     exporter.export()
@@ -62,7 +62,7 @@ SCHEMA = {
 
 
 def test_ParquetExporter_with_schema(event, schema):
-    (prefix, file) = schema()
+    prefix, file = schema()
     event_data = event(prefix, chunksize=None, schema=SCHEMA)
     exporter = ParquetExporter(event_data)
     exporter.export()
@@ -88,7 +88,7 @@ def test_ParquetExporter_with_schema(event, schema):
 
 
 def test_ParquetExporter_with_schema_wrong_number(event, schema_wrong):
-    (prefix, file) = schema_wrong()
+    prefix, file = schema_wrong()
     event_data = event(prefix, chunksize=None, schema=SCHEMA)
     exporter = ParquetExporter(event_data)
     with pytest.raises(
@@ -132,7 +132,7 @@ def export_and_read_result(event_data, outputprefix):
 
 
 def test_ParquetExporter_valid_dates(event, dates_file):
-    (prefix, file) = dates_file()
+    prefix, file = dates_file()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     result = export_and_read_result(event_data, "schema_dates")
     assert result["year_column"][0].year == 1678
@@ -144,7 +144,7 @@ def test_ParquetExporter_valid_dates(event, dates_file):
 
 
 def test_ParquetExporter_valid_dates_no_schema(event, dates_file):
-    (prefix, file) = dates_file()
+    prefix, file = dates_file()
     event_data = event(prefix, chunksize=None, schema=None)
     result = export_and_read_result(event_data, "schema_dates")
 
@@ -155,7 +155,7 @@ def test_ParquetExporter_valid_dates_no_schema(event, dates_file):
 
 
 def test_ParquetExporter_invalid_year_too_early(event, dates_file_year_too_early):
-    (prefix, file) = dates_file_year_too_early()
+    prefix, file = dates_file_year_too_early()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     exporter = ParquetExporter(event_data)
     result = exporter.export()
@@ -164,7 +164,7 @@ def test_ParquetExporter_invalid_year_too_early(event, dates_file_year_too_early
 
 
 def test_ParquetExporter_invalid_year_too_late(event, dates_file_year_too_late):
-    (prefix, file) = dates_file_year_too_late()
+    prefix, file = dates_file_year_too_late()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     exporter = ParquetExporter(event_data)
     result = exporter.export()
@@ -173,7 +173,7 @@ def test_ParquetExporter_invalid_year_too_late(event, dates_file_year_too_late):
 
 
 def test_ParquetExporter_date_with_string(event, dates_file_date_string_value):
-    (prefix, file) = dates_file_date_string_value()
+    prefix, file = dates_file_date_string_value()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     exporter = ParquetExporter(event_data)
     result = exporter.export()
@@ -182,7 +182,7 @@ def test_ParquetExporter_date_with_string(event, dates_file_date_string_value):
 
 
 def test_ParquetExporter_date_with_time(event, dates_file_date_with_time):
-    (prefix, file) = dates_file_date_with_time()
+    prefix, file = dates_file_date_with_time()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     result = export_and_read_result(event_data, "schema_dates_date_with_time")
     assert result["date_column"][0].year == 2020
@@ -191,7 +191,7 @@ def test_ParquetExporter_date_with_time(event, dates_file_date_with_time):
 
 
 def test_ParquetExporter_date_wrong_date(event, dates_file_date_wrong):
-    (prefix, file) = dates_file_date_wrong()
+    prefix, file = dates_file_date_wrong()
     event_data = event(prefix, chunksize=None, schema=schema_dates)
     exporter = ParquetExporter(event_data)
     result = exporter.export()
@@ -200,7 +200,7 @@ def test_ParquetExporter_date_wrong_date(event, dates_file_date_wrong):
 
 
 def test_ParquetExporter_valid_datetimes(event, datetimes_file):
-    (prefix, file) = datetimes_file()
+    prefix, file = datetimes_file()
     event_data = event(prefix, chunksize=None, schema=schema_datetimes)
     result = export_and_read_result(event_data, "schema_datetimes")
 
@@ -220,7 +220,7 @@ def test_ParquetExporter_valid_datetimes(event, datetimes_file):
 
 
 def test_ParquetExporter_valid_datetimes_no_schema(event, datetimes_file):
-    (prefix, file) = datetimes_file()
+    prefix, file = datetimes_file()
     event_data = event(prefix, chunksize=None, schema=None)
     result = export_and_read_result(event_data, "datetimes")
 
@@ -240,7 +240,7 @@ def test_ParquetExporter_valid_datetimes_no_schema(event, datetimes_file):
 
 
 def test_ParquetExporter_valid_datetimes_with_tz(event, datetimes_file_with_tz):
-    (prefix, file) = datetimes_file_with_tz()
+    prefix, file = datetimes_file_with_tz()
     event_data = event(prefix, chunksize=None, schema=None)
     result = export_and_read_result(event_data, "datetimes_with_tz")
 
@@ -264,7 +264,7 @@ def test_ParquetExporter_valid_datetimes_with_tz(event, datetimes_file_with_tz):
 def test_ParquetExporter_valid_datetimes_without_time(
     event, datetimes_file_without_time
 ):
-    (prefix, file) = datetimes_file_without_time()
+    prefix, file = datetimes_file_without_time()
     event_data = event(prefix, chunksize=None, schema=None)
     result = export_and_read_result(event_data, "schema_datetimes_without_time")
 
@@ -286,7 +286,7 @@ def test_ParquetExporter_valid_datetimes_without_time(
 def test_ParquetExporter_valid_datetimes_mixed_formats(
     event, datetimes_file_mixed_formats
 ):
-    (prefix, file) = datetimes_file_mixed_formats()
+    prefix, file = datetimes_file_mixed_formats()
     event_data = event(prefix, chunksize=None, schema=None)
     result = export_and_read_result(event_data, "schema_datetimes_mixed_formats")
 

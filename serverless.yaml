@@ -60,6 +60,7 @@ functions:
       name: okdata-pipeline
       command:
         - okdata.pipeline.converters.json.handlers.json_to_delta
+    memorySize: 2048
   invoke-lambda:
     image:
       name: okdata-pipeline

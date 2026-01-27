@@ -160,10 +160,8 @@ class Exporter:
 
         for column in date_columns_convert:
             if column["format"] not in DATE_FORMATS_INPUT_FORMAT:
-                raise KeyError(
-                    f"""Date column: {column["name"]} defined but
-                    could not find input format for it """
-                )
+                raise KeyError(f"""Date column: {column["name"]} defined but
+                    could not find input format for it """)
 
             date_format = DATE_FORMATS_INPUT_FORMAT[column["format"]]
 
